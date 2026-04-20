@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartSign — Weekly Performance Report</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+:root{--bg:#080c14;--cd:#0f1629;--cd2:#131b30;--hv:#1a2440;--sf:#0b1020;--bd:#1c2844;--bd2:#2a3a5c;--t1:#eef2ff;--t2:#b0bfe0;--t3:#6b7fa3;--tw:#fff;--cy:#00e5c8;--or:#ff9f43;--rd:#ff5b5b;--gn:#2ecc71;--pu:#a78bfa;--yl:#f1c40f;--mo:'JetBrains Mono',monospace;--sa:'DM Sans',sans-serif;}
+*{margin:0;padding:0;box-sizing:border-box;}body{background:var(--bg);color:var(--t1);font-family:var(--sa);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.025'/%3E%3C/svg%3E");pointer-events:none;z-index:0;}
+.w{max-width:1500px;margin:0 auto;padding:28px 36px;position:relative;z-index:1;}
+.hdr{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:36px;padding-bottom:20px;border-bottom:1px solid var(--bd);}
+.hdr-l .cr{font:600 10px/1 var(--mo);letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:10px;}.hdr-l .cr a{color:var(--cy);text-decoration:none;}
+.hdr-l h1{font:800 32px/1.1 var(--mo);background:linear-gradient(135deg,var(--cy),#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hdr-l .sub{font:500 13px/1 var(--mo);color:var(--t3);margin-top:6px;}
+.cts{display:flex;gap:14px;align-items:flex-end;}.ct label{display:block;font:600 9px/1 var(--mo);letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:5px;}
+.ct select{background:var(--cd);border:1px solid var(--bd);color:var(--t1);padding:10px 36px 10px 14px;border-radius:8px;font:500 13px/1 var(--mo);cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7fa3' stroke-width='2.5'%3E%3Cpolyline points='6,9 12,15 18,9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;transition:border .2s;}
+.ct select:hover,.ct select:focus{border-color:var(--cy);}
+
+/* Highlight delta cards */
+.hl{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:28px;}
+.hlc{background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:18px 16px;text-align:center;transition:all .25s;}
+.hlc:hover{border-color:var(--cy);transform:translateY(-2px);}
+.hlc .hlb{font:600 10px/1 var(--mo);letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:10px;}
+.hlc .hlv{font:800 26px/1 var(--mo);}
+.hlc .hls{font:500 11px/1 var(--mo);color:var(--t2);margin-top:6px;}
+.up{color:var(--gn)!important;}.dn{color:var(--rd)!important;}
+
+/* Big metric cards */
+.bm{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+.bmc{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:24px 20px;position:relative;overflow:hidden;}
+.bmc::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:14px 0 0 14px;}
+.bmc:nth-child(1)::before{background:var(--cy);}.bmc:nth-child(2)::before{background:var(--or);}.bmc:nth-child(3)::before{background:var(--gn);}.bmc:nth-child(4)::before{background:var(--pu);}
+.bmc .bl{font:600 10px/1 var(--mo);letter-spacing:1.8px;text-transform:uppercase;color:var(--t3);margin-bottom:10px;}
+.bmc .bv{font:800 30px/1 var(--mo);color:var(--tw);}
+.bmc .bd{font:500 12px/1.4 var(--mo);color:var(--t2);margin-top:8px;}
+
+/* Sections */
+.sc{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:26px;margin-bottom:24px;}
+.sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+.st{font:700 13px/1 var(--mo);letter-spacing:1.2px;text-transform:uppercase;color:var(--t2);}
+.lg{display:flex;gap:18px;}.li{display:flex;align-items:center;gap:6px;font:500 12px/1 var(--mo);color:var(--t2);}
+.dot{width:10px;height:10px;border-radius:50%;}.dot.c1{background:var(--cy);}.dot.c2{background:var(--or);}.dot.c3{background:var(--pu);}
+.cb{height:340px;position:relative;}.cbs{height:280px;position:relative;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;}.g2 .sc{margin-bottom:0;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:24px;}.g3 .sc{margin-bottom:0;}
+
+/* Channel breakdown */
+.chb{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:28px;}
+.chc{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:20px;}
+.chc .cht{font:700 13px/1 var(--mo);color:var(--t2);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--bd);}
+.chc .chm{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font:500 12px/1.3 var(--mo);}
+.chc .chm .chl{color:var(--t3);}.chc .chm .chv{color:var(--t1);font-weight:600;}
+.chc .chm .chd{font-weight:700;font-size:11px;margin-left:8px;}
+
+/* Table */
+.tw{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-family:var(--mo);}
+thead th{padding:12px 12px;text-align:right;font:700 10px/1 var(--mo);text-transform:uppercase;letter-spacing:1px;color:var(--t3);border-bottom:2px solid var(--bd2);white-space:nowrap;}
+thead th:first-child{text-align:left;}
+tbody td{padding:10px 12px;text-align:right;font:500 12px/1.2 var(--mo);color:var(--t2);border-bottom:1px solid #1c284422;white-space:nowrap;}
+tbody td:first-child{text-align:left;color:var(--t1);font-weight:600;}
+tbody tr:hover{background:var(--hv);}
+.hi-row{background:rgba(0,229,200,.06)!important;border-left:3px solid var(--cy);}
+.hi-row td{color:var(--tw)!important;font-weight:600!important;}
+
+.ft{text-align:center;padding:28px;font:500 11px/1 var(--mo);color:var(--t3);border-top:1px solid var(--bd);margin-top:24px;}
+@media(max-width:1200px){.hl{grid-template-columns:repeat(3,1fr);}.bm,.chb{grid-template-columns:1fr 1fr;}.g2,.g3{grid-template-columns:1fr;}}
+@media(max-width:768px){.hl{grid-template-columns:1fr 1fr;}.bm,.chb{grid-template-columns:1fr;}.hdr{flex-direction:column;gap:16px;}.w{padding:16px;}}
+</style>
+</head>
+<body>
+<div class="w">
+<div class="hdr"><div class="hdr-l"><div class="cr"><a href="#">← Dashboard Hub</a> / Weekly Performance</div><h1>Weekly Performance Report</h1><div class="sub" id="weekLabel">SC + VC Combined · Sun–Sat</div></div>
+<div class="cts"><div class="ct"><label>View</label><select id="vs"><option value="combined">SC + VC Combined</option><option value="SC">Seller Central</option><option value="VC">Vendor Central</option></select></div></div></div>
+<div id="app"><div style="text-align:center;padding:80px 0;font-family:var(--mo);color:var(--t3);">Loading…</div></div>
+<div class="ft">SmartSign USA · Amazon Ads Weekly Performance · Updated via CSV</div>
+</div>
+
+<script>
+const CSV='wow_data.csv';let RAW=[];const $=s=>document.querySelector(s);let CH={};
+const F={
+  k:n=>n==null||isNaN(n)?'—':'$'+(Math.abs(n)>=1e6?(n/1e6).toFixed(2)+'M':Math.abs(n)>=1e3?(n/1e3).toFixed(1)+'K':Math.round(n).toLocaleString()),
+  d:n=>n==null||isNaN(n)?'—':'$'+Math.round(n).toLocaleString(),
+  n:n=>n==null||isNaN(n)?'—':Math.round(n).toLocaleString(),
+  r:n=>n==null||isNaN(n)||!isFinite(n)?'—':n.toFixed(2),
+  p:n=>n==null||isNaN(n)?'—':(n*100).toFixed(1)+'%',
+  dp:(c,p)=>{if(!p||p===0)return{t:'—',c:''};const d=((c-p)/Math.abs(p))*100;return{t:(d>=0?'+':'')+d.toFixed(0)+'%',c:d>=0?'up':'dn'}}
+};
+
+async function init(){
+  try{
+    const r=await fetch(CSV);const t=await r.text();
+    RAW=Papa.parse(t,{header:true,dynamicTyping:true,skipEmptyLines:true}).data.filter(r=>r.week&&r.channel);
+    go();
+  }catch(e){$('#app').innerHTML=`<p style="text-align:center;padding:80px;color:var(--rd);font:500 14px var(--mo)">Could not load wow_data.csv</p>`;}
+}
+
+function getWeeks(view){
+  const sc=RAW.filter(r=>r.channel==='SC');
+  const vc=RAW.filter(r=>r.channel==='VC');
+  if(view==='SC')return sc;
+  if(view==='VC')return vc;
+  // Combined: merge by index
+  return sc.map((s,i)=>{
+    const v=vc[i]||{};
+    return{week:s.week,channel:'SC+VC',
+      impressions:(s.impressions||0)+(v.impressions||0),clicks:(s.clicks||0)+(v.clicks||0),
+      ad_cost:(s.ad_cost||0)+(v.ad_cost||0),ad_orders:(s.ad_orders||0)+(v.ad_orders||0),
+      ad_sales:(s.ad_sales||0)+(v.ad_sales||0),
+      t_sales:(s.t_sales||0)+(v.t_sales||0),t_orders:(s.t_orders||0)+(v.t_orders||0),
+      organic_sales:(s.organic_sales||0)+(v.organic_sales||0),
+      organic_orders:(s.organic_orders||0)+(v.organic_orders||0),
+      roas:((s.ad_sales||0)+(v.ad_sales||0))/((s.ad_cost||0)+(v.ad_cost||0)||1),
+      ad_aov:((s.ad_sales||0)+(v.ad_sales||0))/((s.ad_orders||0)+(v.ad_orders||0)||1),
+      ad_pct:((s.ad_cost||0)+(v.ad_cost||0))/((s.t_sales||0)+(v.t_sales||0)||1),
+      blended_roas:((s.t_sales||0)+(v.t_sales||0))/((s.ad_cost||0)+(v.ad_cost||0)||1),
+      revenue_target:(s.revenue_target||0)+(v.revenue_target||0),
+      budget_target:(s.budget_target||0)+(v.budget_target||0),
+      acos:((s.ad_cost||0)+(v.ad_cost||0))/((s.ad_sales||0)+(v.ad_sales||0)||1),
+    };
+  });
+}
+
+function go(){
+  const view=$('#vs').value;
+  const weeks=getWeeks(view);
+  if(weeks.length<2){$('#app').innerHTML='<p style="text-align:center;padding:80px;color:var(--t3);">Not enough data</p>';return;}
+
+  const tw=weeks[weeks.length-1]; // This week
+  const pw=weeks[weeks.length-2]; // Prev week
+
+  const viewLabel=view==='combined'?'SC + VC Combined':view==='SC'?'Seller Central':'Vendor Central';
+  $('#weekLabel').textContent=`${viewLabel} · Week of ${tw.week}`;
+
+  // WoW Deltas
+  const deltas=[
+    {label:'Paid Orders',cy:tw.ad_orders,py:pw.ad_orders},
+    {label:'Paid Sales',cy:tw.ad_sales,py:pw.ad_sales},
+    {label:'Total Sales',cy:tw.t_sales,py:pw.t_sales},
+    {label:'Organic Sales',cy:tw.organic_sales,py:pw.organic_sales},
+    {label:'T-ROAS',cy:tw.blended_roas||tw.t_sales/(tw.ad_cost||1),py:pw.blended_roas||pw.t_sales/(pw.ad_cost||1)},
+    {label:'Ad Cost',cy:tw.ad_cost,py:pw.ad_cost},
+  ];
+
+  // Channel breakdown (only for combined view)
+  let chBreakdownHTML='';
+  if(view==='combined'){
+    const scW=RAW.filter(r=>r.channel==='SC');
+    const vcW=RAW.filter(r=>r.channel==='VC');
+    const scTW=scW[scW.length-1],scPW=scW[scW.length-2];
+    const vcTW=vcW[vcW.length-1],vcPW=vcW[vcW.length-2];
+    const channels=[
+      {name:'Seller Central',tag:'SC',tw:scTW,pw:scPW},
+      {name:'Vendor Central',tag:'VC',tw:vcTW,pw:vcPW},
+      {name:'SC + VC Combined',tag:'Combined',tw:tw,pw:pw}
+    ];
+    chBreakdownHTML=`<div class="chb">${channels.map(ch=>{
+      const m=[
+        ['Ad Orders',ch.tw.ad_orders,ch.pw.ad_orders],
+        ['Impressions',ch.tw.impressions,ch.pw.impressions],
+        ['Clicks',ch.tw.clicks,ch.pw.clicks],
+        ['Ad Sales',ch.tw.ad_sales,ch.pw.ad_sales],
+        ['Ad AOV',ch.tw.ad_aov||(ch.tw.ad_sales/(ch.tw.ad_orders||1)),ch.pw.ad_aov||(ch.pw.ad_sales/(ch.pw.ad_orders||1))],
+        ['ROAS',ch.tw.roas,ch.pw.roas],
+        ['Ad Cost',ch.tw.ad_cost,ch.pw.ad_cost],
+        ['T-Sales',ch.tw.t_sales,ch.pw.t_sales],
+        ['Organic Sales',ch.tw.organic_sales,ch.pw.organic_sales],
+        ['T ROAS',ch.tw.blended_roas||(ch.tw.t_sales/(ch.tw.ad_cost||1)),ch.pw.blended_roas||(ch.pw.t_sales/(ch.pw.ad_cost||1))]
+      ];
+      return`<div class="chc"><div class="cht">${ch.name}</div>${m.map(([lbl,cv,pv])=>{
+        const isCurr=['Ad Sales','Ad Cost','T-Sales','Organic Sales'].includes(lbl);
+        const d=F.dp(cv,pv);
+        return`<div class="chm"><span class="chl">${lbl}</span><span><span class="chv">${isCurr?F.d(cv):typeof cv==='number'&&cv>1000?F.n(cv):F.r(cv)}</span><span class="chd ${d.c}">${d.t}</span></span></div>`;
+      }).join('')}</div>`;
+    }).join('')}</div>`;
+  }
+
+  $('#app').innerHTML=`
+    <!-- WoW Delta Highlights -->
+    <div class="hl">${deltas.map(d=>{
+      const delta=F.dp(d.cy,d.py);
+      const valStr=['Paid Orders'].includes(d.label)?F.n(d.cy):['T-ROAS'].includes(d.label)?F.r(d.cy):F.k(d.cy);
+      return`<div class="hlc"><div class="hlb">${d.label}</div><div class="hlv ${delta.c}">${delta.t}</div><div class="hls">${valStr}</div></div>`;
+    }).join('')}</div>
+
+    <!-- Big Metrics -->
+    <div class="bm">
+      <div class="bmc"><div class="bl">Total Sales</div><div class="bv">${F.k(tw.t_sales)}</div><div class="bd">${F.dp(tw.t_sales,pw.t_sales).c==='up'?'▲':'▼'} ${F.dp(tw.t_sales,pw.t_sales).t} WoW</div></div>
+      <div class="bmc"><div class="bl">Ad Spend</div><div class="bv">${F.k(tw.ad_cost)}</div><div class="bd">${F.dp(tw.ad_cost,pw.ad_cost).c==='up'?'▲':'▼'} ${F.dp(tw.ad_cost,pw.ad_cost).t} WoW</div></div>
+      <div class="bmc"><div class="bl">Total ROAS</div><div class="bv">${F.r(tw.blended_roas||(tw.t_sales/(tw.ad_cost||1)))}</div><div class="bd">${F.dp(tw.blended_roas,pw.blended_roas).c==='up'?'▲':'▼'} ${F.dp(tw.blended_roas,pw.blended_roas).t} WoW</div></div>
+      <div class="bmc"><div class="bl">Organic Sales</div><div class="bv">${F.k(tw.organic_sales)}</div><div class="bd">${F.dp(tw.organic_sales,pw.organic_sales).c==='up'?'▲':'▼'} ${F.dp(tw.organic_sales,pw.organic_sales).t} WoW</div></div>
+    </div>
+
+    ${chBreakdownHTML}
+
+    <!-- Trend Charts -->
+    <div class="g2">
+      <div class="sc"><div class="sh"><div class="st">Weekly T-Sales & Ad Spend Trend</div></div><div class="cb"><canvas id="trendChart"></canvas></div></div>
+      <div class="sc"><div class="sh"><div class="st">ROAS & ACOS Trend</div></div><div class="cb"><canvas id="roasChart"></canvas></div></div>
+    </div>
+
+    <div class="g2">
+      <div class="sc"><div class="sh"><div class="st">Ad Sales vs Organic Sales</div></div><div class="cbs"><canvas id="splitChart"></canvas></div></div>
+      <div class="sc"><div class="sh"><div class="st">Impressions & Clicks</div></div><div class="cbs"><canvas id="trafficChart"></canvas></div></div>
+    </div>
+
+    <!-- Full Weekly Table -->
+    <div class="sc"><div class="sh"><div class="st">All Weeks · Rolling Data</div></div>
+    <div class="tw"><table><thead><tr>
+      <th style="text-align:left">Week</th><th>Ad Cost</th><th>Ad Sales</th><th>ROAS</th><th>ACOS</th><th>T-Sales</th><th>Organic</th><th>T-ROAS</th><th>Orders</th><th>Impressions</th><th>Clicks</th><th>AOV</th>
+    </tr></thead><tbody id="tbl"></tbody></table></div></div>
+  `;
+
+  buildCharts(weeks);
+  buildTable(weeks);
+}
+
+function buildCharts(w){
+  const lb=w.map(r=>r.week);
+  const tt={backgroundColor:'#1a2440',titleColor:'#eef2ff',bodyColor:'#b0bfe0',borderColor:'#2a3a5c',borderWidth:1,titleFont:{family:'JetBrains Mono',size:12},bodyFont:{family:'JetBrains Mono',size:11},padding:12};
+  const ax=(cb)=>({x:{ticks:{color:'#6b7fa3',font:{family:'JetBrains Mono',size:10},maxRotation:45},grid:{color:'#1c284422'}},y:{position:'left',ticks:{color:'#6b7fa3',font:{family:'JetBrains Mono',size:11},callback:cb||((v)=>'$'+(v>=1e3?(v/1e3).toFixed(0)+'K':v))},grid:{color:'#1c284422'}}});
+
+  // Trend: T-Sales bars + Ad Spend line
+  if(CH.t)CH.t.destroy();
+  CH.t=new Chart($('#trendChart'),{type:'bar',data:{labels:lb,datasets:[
+    {type:'bar',label:'T-Sales',data:w.map(r=>r.t_sales),backgroundColor:'#00e5c844',borderColor:'#00e5c8',borderWidth:1,borderRadius:4,yAxisID:'y'},
+    {type:'line',label:'Ad Spend',data:w.map(r=>r.ad_cost),borderColor:'#ff9f43',backgroundColor:'transparent',tension:.3,pointRadius:3,pointBackgroundColor:'#ff9f43',borderWidth:2,yAxisID:'y1'}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{color:'#b0bfe0',font:{family:'JetBrains Mono',size:11}}},tooltip:tt},
+  scales:{...ax(),y1:{position:'right',ticks:{color:'#ff9f43',font:{family:'JetBrains Mono',size:10},callback:v=>'$'+(v>=1e3?(v/1e3).toFixed(0)+'K':v)},grid:{display:false}}}}});
+
+  // ROAS trend
+  if(CH.r)CH.r.destroy();
+  CH.r=new Chart($('#roasChart'),{type:'line',data:{labels:lb,datasets:[
+    {label:'Ad ROAS',data:w.map(r=>r.roas),borderColor:'#00e5c8',tension:.3,pointRadius:4,pointBackgroundColor:'#00e5c8',borderWidth:2.5},
+    {label:'T-ROAS',data:w.map(r=>r.blended_roas||(r.t_sales/(r.ad_cost||1))),borderColor:'#a78bfa',tension:.3,pointRadius:4,pointBackgroundColor:'#a78bfa',borderWidth:2},
+    {label:'ACOS',data:w.map(r=>(r.acos||r.ad_cost/(r.ad_sales||1))*100),borderColor:'#ff9f43',tension:.3,pointRadius:3,pointBackgroundColor:'#ff9f43',borderWidth:1.5,borderDash:[5,3]}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{color:'#b0bfe0',font:{family:'JetBrains Mono',size:11}}},tooltip:tt},
+  scales:{...ax(v=>v>10?v.toFixed(0)+'%':v.toFixed(1)+'x')}}});
+
+  // Ad vs Organic split
+  if(CH.s)CH.s.destroy();
+  CH.s=new Chart($('#splitChart'),{type:'bar',data:{labels:lb,datasets:[
+    {label:'Ad Sales',data:w.map(r=>r.ad_sales),backgroundColor:'#00e5c866',borderColor:'#00e5c8',borderWidth:1,borderRadius:4},
+    {label:'Organic Sales',data:w.map(r=>r.organic_sales),backgroundColor:'#a78bfa44',borderColor:'#a78bfa',borderWidth:1,borderRadius:4}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{color:'#b0bfe0',font:{family:'JetBrains Mono',size:11}}},tooltip:tt},scales:{...ax()},interaction:{mode:'index'}}});
+
+  // Traffic
+  if(CH.tf)CH.tf.destroy();
+  CH.tf=new Chart($('#trafficChart'),{type:'line',data:{labels:lb,datasets:[
+    {label:'Impressions',data:w.map(r=>r.impressions),borderColor:'#60a5fa',tension:.3,pointRadius:3,borderWidth:2,yAxisID:'y'},
+    {label:'Clicks',data:w.map(r=>r.clicks),borderColor:'#f97316',tension:.3,pointRadius:3,borderWidth:2,yAxisID:'y1'}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{color:'#b0bfe0',font:{family:'JetBrains Mono',size:11}}},tooltip:tt},
+  scales:{y:{ticks:{color:'#60a5fa',font:{family:'JetBrains Mono',size:10},callback:v=>(v/1e6).toFixed(1)+'M'},grid:{color:'#1c284422'}},y1:{position:'right',ticks:{color:'#f97316',font:{family:'JetBrains Mono',size:10},callback:v=>(v/1e3).toFixed(0)+'K'},grid:{display:false}},x:{ticks:{color:'#6b7fa3',font:{family:'JetBrains Mono',size:10},maxRotation:45},grid:{color:'#1c284422'}}}}});
+}
+
+function buildTable(w){
+  const tb=$('#tbl');
+  const last=w.length-1;
+  tb.innerHTML=w.map((r,i)=>{
+    const isLatest=i===last;
+    const roas=r.roas||((r.ad_sales||0)/(r.ad_cost||1));
+    const acos=(r.acos||(r.ad_cost/(r.ad_sales||1)))*100;
+    const tRoas=r.blended_roas||((r.t_sales||0)/(r.ad_cost||1));
+    const aov=r.ad_aov||((r.ad_sales||0)/(r.ad_orders||1));
+    return`<tr class="${isLatest?'hi-row':''}">
+      <td>${r.week}</td>
+      <td>${F.d(r.ad_cost)}</td><td>${F.d(r.ad_sales)}</td>
+      <td>${F.r(roas)}</td><td>${acos.toFixed(1)}%</td>
+      <td>${F.d(r.t_sales)}</td><td>${F.d(r.organic_sales)}</td>
+      <td>${F.r(tRoas)}</td><td>${F.n(r.ad_orders)}</td>
+      <td>${F.n(r.impressions)}</td><td>${F.n(r.clicks)}</td>
+      <td>$${aov.toFixed(2)}</td>
+    </tr>`;
+  }).join('');
+}
+
+$('#vs').addEventListener('change',go);
+init();
+</script>
+</body>
+</html>
