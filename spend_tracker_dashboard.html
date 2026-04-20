@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartSign — Spend Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+:root {
+  --bg-primary: #0a0e17;
+  --bg-card: #111827;
+  --bg-card-hover: #1a2236;
+  --border: #1e293b;
+  --border-accent: #2dd4bf22;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent-cyan: #2dd4bf;
+  --accent-cyan-dim: #2dd4bf44;
+  --accent-orange: #fb923c;
+  --accent-orange-dim: #fb923c44;
+  --accent-red: #ef4444;
+  --accent-green: #22c55e;
+  --accent-purple: #a78bfa;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: 'DM Sans', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Noise overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+.container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px 32px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.header-left h1 {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.header-left .subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-family: var(--font-mono);
+}
+
+.header-left .breadcrumb {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.header-left .breadcrumb a {
+  color: var(--accent-cyan);
+  text-decoration: none;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.control-group label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+select {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+  appearance: none;
+  padding-right: 32px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6,9 12,15 18,9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+select:hover { border-color: var(--accent-cyan); }
+select:focus { border-color: var(--accent-cyan); box-shadow: 0 0 0 2px var(--accent-cyan-dim); }
+
+/* Hero Cards */
+.hero-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.hero-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.hero-card:hover {
+  border-color: var(--accent-cyan);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(45, 212, 191, 0.08);
+}
+
+.hero-card.wallet { border-left: 3px solid var(--accent-cyan); }
+.hero-card.spend { border-left: 3px solid var(--accent-orange); }
+.hero-card.pacing { border-left: 3px solid var(--accent-purple); }
+.hero-card.roas { border-left: 3px solid var(--accent-green); }
+.hero-card.delta { border-left: 3px solid var(--accent-red); }
+
+.hero-card .card-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  margin-bottom: 8px;
+}
+
+.hero-card .card-value {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.hero-card .card-sub {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+  font-family: var(--font-mono);
+}
+
+.positive { color: var(--accent-green) !important; }
+.negative { color: var(--accent-red) !important; }
+
+/* Chart Section */
+.chart-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 28px;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.chart-title {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 20px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legend-dot.cy { background: var(--accent-cyan); }
+.legend-dot.py { background: var(--accent-orange); }
+
+.chart-container {
+  height: 320px;
+  position: relative;
+}
+
+/* Dual charts */
+.dual-chart-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.dual-chart-grid .chart-section { margin-bottom: 0; }
+
+/* Table Section */
+.table-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 28px;
+  overflow-x: auto;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+thead th {
+  padding: 10px 14px;
+  text-align: right;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+thead th:first-child, thead th:nth-child(2) { text-align: left; }
+
+tbody td {
+  padding: 10px 14px;
+  text-align: right;
+  color: var(--text-secondary);
+  border-bottom: 1px solid #1e293b44;
+  white-space: nowrap;
+}
+
+tbody td:first-child, tbody td:nth-child(2) {
+  text-align: left;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+tbody tr:hover { background: var(--bg-card-hover); }
+
+tbody tr.weekend { opacity: 0.6; }
+tbody tr.today { background: var(--accent-cyan-dim); border-left: 3px solid var(--accent-cyan); }
+
+.delta-cell { font-weight: 600; }
+
+/* Day indicator */
+.day-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  background: #1e293b;
+  color: var(--text-secondary);
+}
+
+.day-badge.weekday { background: #1e3a5f; color: #60a5fa; }
+.day-badge.weekend { background: #3b1f2b; color: #f87171; }
+
+/* Pacing bar */
+.pacing-bar-container {
+  width: 100%;
+  height: 6px;
+  background: #1e293b;
+  border-radius: 3px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.pacing-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.8s ease;
+}
+
+.pacing-bar.on-track { background: linear-gradient(90deg, var(--accent-green), #4ade80); }
+.pacing-bar.over { background: linear-gradient(90deg, var(--accent-orange), var(--accent-red)); }
+.pacing-bar.under { background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple)); }
+
+/* Loading */
+.loading {
+  text-align: center;
+  padding: 80px 0;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.loading .spinner {
+  width: 40px; height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent-cyan);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 24px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  margin-top: 20px;
+}
+
+/* Summary row */
+.summary-row { background: #0f172a !important; font-weight: 700 !important; }
+.summary-row td { color: var(--text-primary) !important; border-top: 2px solid var(--accent-cyan); }
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .hero-grid { grid-template-columns: repeat(3, 1fr); }
+  .dual-chart-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .hero-grid { grid-template-columns: 1fr 1fr; }
+  .header { flex-direction: column; gap: 16px; }
+  .container { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="header-left">
+      <div class="breadcrumb"><a href="#">← Dashboard Hub</a> / Spend Tracker</div>
+      <h1>Spend Tracker</h1>
+      <div class="subtitle">Daily YoY Performance · Day-of-Week Aligned</div>
+    </div>
+    <div class="controls">
+      <div class="control-group">
+        <label>Channel</label>
+        <select id="channelSelect">
+          <option value="SC">Seller Central</option>
+          <option value="VC">Vendor Central</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Month</label>
+        <select id="monthSelect"></select>
+      </div>
+    </div>
+  </div>
+
+  <div id="dashboard-content">
+    <div class="loading">
+      <div class="spinner"></div>
+      Loading data...
+    </div>
+  </div>
+
+  <div class="footer">
+    SmartSign USA · Amazon Ads Performance Dashboard · Data updates via CSV
+  </div>
+</div>
+
+<script>
+// ========== CONFIG ==========
+// When hosted on GitHub Pages, set this to the CSV filename in the same repo
+const CSV_URL = 'spend_tracker_data.csv';
+
+let allData = [];
+let spendChart = null;
+let salesChart = null;
+let roasChart = null;
+
+// ========== DATA LOADING ==========
+async function loadData() {
+  try {
+    const response = await fetch(CSV_URL);
+    const csvText = await response.text();
+    const parsed = Papa.parse(csvText, { header: true, dynamicTyping: true, skipEmptyLines: true });
+    allData = parsed.data.filter(r => r.date && r.channel);
+    populateFilters();
+    renderDashboard();
+  } catch (err) {
+    document.getElementById('dashboard-content').innerHTML = `
+      <div class="loading" style="color: var(--accent-red);">
+        <p style="font-size:16px; margin-bottom:12px;">Could not load CSV data</p>
+        <p style="font-size:12px; color:var(--text-muted);">Make sure <code>spend_tracker_data.csv</code> is in the same directory.</p>
+        <p style="font-size:12px; color:var(--text-muted); margin-top:8px;">Error: ${err.message}</p>
+      </div>`;
+  }
+}
+
+function populateFilters() {
+  const months = [...new Set(allData.map(r => r.month))];
+  const sel = document.getElementById('monthSelect');
+  sel.innerHTML = months.map(m => `<option value="${m}">${m}</option>`).join('');
+}
+
+function getFilteredData() {
+  const ch = document.getElementById('channelSelect').value;
+  const mo = document.getElementById('monthSelect').value;
+  return allData.filter(r => r.channel === ch && r.month === mo).sort((a, b) => new Date(a.date) - new Date(b.date));
+}
+
+// ========== FORMATTING ==========
+const fmt = (n) => n == null || isNaN(n) ? '—' : '$' + Math.round(n).toLocaleString();
+const fmtK = (n) => n == null || isNaN(n) ? '—' : '$' + (n >= 1000 ? (n/1000).toFixed(1) + 'K' : Math.round(n).toLocaleString());
+const fmtPct = (n) => n == null || isNaN(n) ? '—' : (n * 100).toFixed(1) + '%';
+const fmtRoas = (n) => n == null || isNaN(n) || !isFinite(n) ? '—' : n.toFixed(2) + 'x';
+const fmtDelta = (cy, py) => {
+  if (!py || py === 0) return { text: '—', cls: '' };
+  const d = ((cy - py) / Math.abs(py)) * 100;
+  return { text: (d >= 0 ? '+' : '') + d.toFixed(1) + '%', cls: d >= 0 ? 'positive' : 'negative' };
+};
+const fmtDeltaAbs = (cy, py) => {
+  const d = cy - py;
+  return { text: (d >= 0 ? '+' : '') + fmt(d), cls: d >= 0 ? 'positive' : 'negative' };
+};
+
+// ========== RENDER ==========
+function renderDashboard() {
+  const data = getFilteredData();
+  if (!data.length) {
+    document.getElementById('dashboard-content').innerHTML = '<div class="loading">No data for this selection</div>';
+    return;
+  }
+
+  const ch = document.getElementById('channelSelect').value;
+  const budget = data[0].budget || 0;
+  const roasTarget = data[0].roas_target || 0;
+
+  // Compute aggregates
+  const totalSpendCY = data.reduce((s, r) => s + (r.spend || 0), 0);
+  const totalAdSalesCY = data.reduce((s, r) => s + (r.ad_sales || 0), 0);
+  const totalSalesCY = data.reduce((s, r) => s + (r.total_sales || 0), 0);
+  const totalSpendPY = data.reduce((s, r) => s + (r.py_spend || 0), 0);
+  const totalAdSalesPY = data.reduce((s, r) => s + (r.py_ad_sales || 0), 0);
+  const totalSalesPY = data.reduce((s, r) => s + (r.py_total_sales || 0), 0);
+  const walletBalance = budget - totalSpendCY;
+  const roas = totalSpendCY > 0 ? totalAdSalesCY / totalSpendCY : 0;
+  const totalRoas = totalSpendCY > 0 ? totalSalesCY / totalSpendCY : 0;
+  const acos = totalAdSalesCY > 0 ? totalSpendCY / totalAdSalesCY : 0;
+
+  // Pacing
+  const today = new Date();
+  const monthDays = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+  const dayOfMonth = Math.min(today.getDate(), monthDays);
+  const expectedPacing = dayOfMonth / monthDays;
+  const actualPacing = budget > 0 ? totalSpendCY / budget : 0;
+  const pacingStatus = actualPacing > expectedPacing * 1.1 ? 'over' : actualPacing < expectedPacing * 0.9 ? 'under' : 'on-track';
+
+  const spendDelta = fmtDelta(totalSpendCY, totalSpendPY);
+  const salesDelta = fmtDelta(totalSalesCY, totalSalesPY);
+
+  document.getElementById('dashboard-content').innerHTML = `
+    <!-- Hero Cards -->
+    <div class="hero-grid">
+      <div class="hero-card wallet">
+        <div class="card-label">Wallet Balance</div>
+        <div class="card-value">${fmtK(walletBalance)}</div>
+        <div class="card-sub">of ${fmtK(budget)} budget</div>
+        <div class="pacing-bar-container">
+          <div class="pacing-bar ${pacingStatus}" style="width: ${Math.min(actualPacing * 100, 100)}%"></div>
+        </div>
+      </div>
+      <div class="hero-card spend">
+        <div class="card-label">MTD Spend</div>
+        <div class="card-value">${fmtK(totalSpendCY)}</div>
+        <div class="card-sub ${spendDelta.cls}">vs PY: ${spendDelta.text}</div>
+      </div>
+      <div class="hero-card roas">
+        <div class="card-label">Ad ROAS</div>
+        <div class="card-value">${fmtRoas(roas)}</div>
+        <div class="card-sub">Target: ${fmtRoas(roasTarget)}</div>
+      </div>
+      <div class="hero-card pacing">
+        <div class="card-label">Total ROAS</div>
+        <div class="card-value">${fmtRoas(totalRoas)}</div>
+        <div class="card-sub">ACOS: ${fmtPct(acos)}</div>
+      </div>
+      <div class="hero-card delta">
+        <div class="card-label">T-Sales vs PY</div>
+        <div class="card-value ${salesDelta.cls}">${salesDelta.text}</div>
+        <div class="card-sub">${fmtK(totalSalesCY)} vs ${fmtK(totalSalesPY)}</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="chart-section">
+      <div class="chart-header">
+        <div class="chart-title">Daily Spend · 2026 vs 2025</div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot cy"></div> 2026</div>
+          <div class="legend-item"><div class="legend-dot py"></div> 2025</div>
+        </div>
+      </div>
+      <div class="chart-container"><canvas id="spendChart"></canvas></div>
+    </div>
+
+    <div class="dual-chart-grid">
+      <div class="chart-section">
+        <div class="chart-header">
+          <div class="chart-title">Daily Total Sales</div>
+        </div>
+        <div class="chart-container"><canvas id="salesChart"></canvas></div>
+      </div>
+      <div class="chart-section">
+        <div class="chart-header">
+          <div class="chart-title">Daily Ad ROAS</div>
+        </div>
+        <div class="chart-container"><canvas id="roasChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="table-section">
+      <div class="table-header">
+        <div class="chart-title">Daily Breakdown</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Day</th>
+            <th>Spend '26</th>
+            <th>Spend '25</th>
+            <th>Δ Spend</th>
+            <th>Ad Sales '26</th>
+            <th>ROAS '26</th>
+            <th>T-Sales '26</th>
+            <th>T-Sales '25</th>
+            <th>Δ T-Sales</th>
+            <th>T-ROAS '26</th>
+          </tr>
+        </thead>
+        <tbody id="dataTable"></tbody>
+      </table>
+    </div>
+  `;
+
+  renderCharts(data);
+  renderTable(data, totalSpendCY, totalAdSalesCY, totalSalesCY, totalSpendPY, totalAdSalesPY, totalSalesPY);
+}
+
+function renderCharts(data) {
+  const labels = data.map(r => {
+    const d = new Date(r.date);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  });
+  const dayLabels = data.map(r => (r.day || '').substring(0, 3));
+  const combinedLabels = labels.map((l, i) => `${l} (${dayLabels[i]})`);
+
+  const chartDefaults = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1e293b',
+        titleColor: '#f1f5f9',
+        bodyColor: '#94a3b8',
+        borderColor: '#2dd4bf44',
+        borderWidth: 1,
+        titleFont: { family: 'JetBrains Mono', size: 12 },
+        bodyFont: { family: 'JetBrains Mono', size: 11 },
+        padding: 12,
+        callbacks: {
+          label: ctx => `${ctx.dataset.label}: $${Math.round(ctx.parsed.y).toLocaleString()}`
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, maxRotation: 45 },
+        grid: { color: '#1e293b44' }
+      },
+      y: {
+        ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 },
+          callback: v => '$' + (v >= 1000 ? (v/1000).toFixed(0) + 'K' : v) },
+        grid: { color: '#1e293b44' }
+      }
+    }
+  };
+
+  // Spend Chart
+  if (spendChart) spendChart.destroy();
+  spendChart = new Chart(document.getElementById('spendChart'), {
+    type: 'bar',
+    data: {
+      labels: combinedLabels,
+      datasets: [
+        { label: '2026 Spend', data: data.map(r => r.spend), backgroundColor: '#2dd4bf88', borderColor: '#2dd4bf', borderWidth: 1, borderRadius: 4 },
+        { label: '2025 Spend', data: data.map(r => r.py_spend), backgroundColor: '#fb923c44', borderColor: '#fb923c', borderWidth: 1, borderRadius: 4 }
+      ]
+    },
+    options: chartDefaults
+  });
+
+  // Sales Chart
+  if (salesChart) salesChart.destroy();
+  salesChart = new Chart(document.getElementById('salesChart'), {
+    type: 'line',
+    data: {
+      labels: combinedLabels,
+      datasets: [
+        { label: '2026 T-Sales', data: data.map(r => r.total_sales), borderColor: '#2dd4bf', backgroundColor: '#2dd4bf22', tension: 0.3, fill: true, pointRadius: 3, pointBackgroundColor: '#2dd4bf' },
+        { label: '2025 T-Sales', data: data.map(r => r.py_total_sales), borderColor: '#fb923c', backgroundColor: '#fb923c11', tension: 0.3, fill: true, pointRadius: 3, pointBackgroundColor: '#fb923c', borderDash: [5, 5] }
+      ]
+    },
+    options: chartDefaults
+  });
+
+  // ROAS Chart
+  const roasData = data.map(r => r.spend > 0 ? r.ad_sales / r.spend : null);
+  const pyRoasData = data.map(r => r.py_spend > 0 ? r.py_ad_sales / r.py_spend : null);
+  const targetLine = data.map(() => data[0].roas_target);
+  
+  if (roasChart) roasChart.destroy();
+  roasChart = new Chart(document.getElementById('roasChart'), {
+    type: 'line',
+    data: {
+      labels: combinedLabels,
+      datasets: [
+        { label: '2026 ROAS', data: roasData, borderColor: '#2dd4bf', tension: 0.3, pointRadius: 3, pointBackgroundColor: '#2dd4bf' },
+        { label: '2025 ROAS', data: pyRoasData, borderColor: '#fb923c', tension: 0.3, pointRadius: 3, pointBackgroundColor: '#fb923c', borderDash: [5, 5] },
+        { label: 'Target', data: targetLine, borderColor: '#a78bfa44', borderDash: [10, 5], pointRadius: 0, borderWidth: 1 }
+      ]
+    },
+    options: {
+      ...chartDefaults,
+      scales: {
+        ...chartDefaults.scales,
+        y: {
+          ...chartDefaults.scales.y,
+          ticks: { ...chartDefaults.scales.y.ticks, callback: v => v.toFixed(1) + 'x' }
+        }
+      },
+      plugins: {
+        ...chartDefaults.plugins,
+        tooltip: {
+          ...chartDefaults.plugins.tooltip,
+          callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y ? ctx.parsed.y.toFixed(2) + 'x' : '—'}` }
+        }
+      }
+    }
+  });
+}
+
+function renderTable(data, tSpCY, tAsCY, tTsCY, tSpPY, tAsPY, tTsPY) {
+  const tbody = document.getElementById('dataTable');
+  const weekends = ['Saturday', 'Sunday'];
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  let rows = data.map(r => {
+    const roas = r.spend > 0 ? r.ad_sales / r.spend : 0;
+    const tRoas = r.spend > 0 ? r.total_sales / r.spend : 0;
+    const spD = fmtDeltaAbs(r.spend, r.py_spend);
+    const tsD = fmtDeltaAbs(r.total_sales, r.py_total_sales);
+    const isWeekend = weekends.includes(r.day);
+    const isToday = r.date === todayStr;
+    const dayClass = isWeekend ? 'weekend' : 'weekday';
+
+    return `<tr class="${isWeekend ? 'weekend' : ''} ${isToday ? 'today' : ''}">
+      <td>${new Date(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</td>
+      <td><span class="day-badge ${dayClass}">${(r.day || '').substring(0, 3)}</span></td>
+      <td>${fmt(r.spend)}</td>
+      <td style="color:var(--text-muted)">${fmt(r.py_spend)}</td>
+      <td class="delta-cell ${spD.cls}">${spD.text}</td>
+      <td>${fmt(r.ad_sales)}</td>
+      <td>${fmtRoas(roas)}</td>
+      <td>${fmt(r.total_sales)}</td>
+      <td style="color:var(--text-muted)">${fmt(r.py_total_sales)}</td>
+      <td class="delta-cell ${tsD.cls}">${tsD.text}</td>
+      <td>${fmtRoas(tRoas)}</td>
+    </tr>`;
+  });
+
+  // Summary row
+  const tRoasCY = tSpCY > 0 ? tTsCY / tSpCY : 0;
+  const roasCY = tSpCY > 0 ? tAsCY / tSpCY : 0;
+  const sumSpD = fmtDeltaAbs(tSpCY, tSpPY);
+  const sumTsD = fmtDeltaAbs(tTsCY, tTsPY);
+
+  rows.push(`<tr class="summary-row">
+    <td>MTD Total</td><td></td>
+    <td>${fmt(tSpCY)}</td><td style="color:var(--text-muted)">${fmt(tSpPY)}</td>
+    <td class="delta-cell ${sumSpD.cls}">${sumSpD.text}</td>
+    <td>${fmt(tAsCY)}</td><td>${fmtRoas(roasCY)}</td>
+    <td>${fmt(tTsCY)}</td><td style="color:var(--text-muted)">${fmt(tTsPY)}</td>
+    <td class="delta-cell ${sumTsD.cls}">${sumTsD.text}</td>
+    <td>${fmtRoas(tRoasCY)}</td>
+  </tr>`);
+
+  tbody.innerHTML = rows.join('');
+}
+
+// ========== EVENT LISTENERS ==========
+document.getElementById('channelSelect').addEventListener('change', renderDashboard);
+document.getElementById('monthSelect').addEventListener('change', renderDashboard);
+
+// ========== INIT ==========
+loadData();
+</script>
+</body>
+</html>
