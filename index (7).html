@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartSign — Amazon Ads Dashboard Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060a12;--cd:#0d1322;--cd2:#111a2e;--hv:#152038;--bd:#1a2540;--bd2:#263552;--t1:#eef2ff;--t2:#b0bfe0;--t3:#6b7fa3;--tw:#fff;--cy:#00e5c8;--or:#ff9f43;--rd:#ff5b5b;--gn:#2ecc71;--pu:#a78bfa;--bl:#60a5fa;--mo:'JetBrains Mono',monospace;--sa:'DM Sans',sans-serif;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--t1);font-family:var(--sa);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(0,229,200,.04),transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(167,139,250,.04),transparent 60%),radial-gradient(ellipse at 50% 80%,rgba(255,159,67,.03),transparent 60%);pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.6' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0;}
+.w{max-width:1200px;margin:0 auto;padding:48px 36px;position:relative;z-index:1;}
+.hdr{text-align:center;margin-bottom:56px;}
+.hdr .logo{font:800 14px/1 var(--mo);letter-spacing:4px;text-transform:uppercase;color:var(--cy);margin-bottom:16px;opacity:.7;}
+.hdr h1{font:800 44px/1.1 var(--mo);background:linear-gradient(135deg,var(--cy),var(--bl),var(--pu));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px;}
+.hdr .sub{font:500 16px/1.5 var(--sa);color:var(--t3);max-width:600px;margin:0 auto;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:48px;}
+.card{background:var(--cd);border:1px solid var(--bd);border-radius:18px;padding:36px 32px;position:relative;overflow:hidden;cursor:pointer;transition:all .35s ease;text-decoration:none;display:block;}
+.card:hover{border-color:var(--cy);transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,229,200,.08),0 0 0 1px rgba(0,229,200,.15);}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:18px 18px 0 0;opacity:.8;}
+.card.c-cy::before{background:linear-gradient(90deg,var(--cy),var(--gn));}
+.card.c-bl::before{background:linear-gradient(90deg,var(--bl),var(--pu));}
+.card.c-or::before{background:linear-gradient(90deg,var(--or),var(--rd));}
+.card.c-pu::before{background:linear-gradient(90deg,var(--pu),var(--bl));}
+.card::after{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;opacity:0;transition:opacity .35s;pointer-events:none;}
+.card.c-cy::after{background:radial-gradient(circle at 50% 50%,rgba(0,229,200,.06),transparent 60%);}
+.card.c-bl::after{background:radial-gradient(circle at 50% 50%,rgba(96,165,250,.06),transparent 60%);}
+.card.c-or::after{background:radial-gradient(circle at 50% 50%,rgba(255,159,67,.06),transparent 60%);}
+.card.c-pu::after{background:radial-gradient(circle at 50% 50%,rgba(167,139,250,.06),transparent 60%);}
+.card:hover::after{opacity:1;}
+.card .c-icon{font-size:36px;margin-bottom:16px;display:block;}
+.card .c-tag{font:700 9px/1 var(--mo);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:12px;display:inline-block;padding:4px 10px;border-radius:5px;}
+.card.c-cy .c-tag{background:rgba(0,229,200,.1);color:var(--cy);}
+.card.c-bl .c-tag{background:rgba(96,165,250,.1);color:var(--bl);}
+.card.c-or .c-tag{background:rgba(255,159,67,.1);color:var(--or);}
+.card.c-pu .c-tag{background:rgba(167,139,250,.1);color:var(--pu);}
+.card .c-title{font:700 22px/1.2 var(--mo);color:var(--tw);margin-bottom:12px;}
+.card .c-desc{font:400 14px/1.6 var(--sa);color:var(--t2);margin-bottom:20px;}
+.card .c-meta{display:flex;gap:20px;flex-wrap:wrap;}
+.card .c-mi{font:500 11px/1 var(--mo);color:var(--t3);display:flex;align-items:center;gap:5px;}
+.card .c-mi .c-dot{width:6px;height:6px;border-radius:50%;background:var(--t3);}
+.card.c-cy .c-mi .c-dot{background:var(--cy);}
+.card.c-bl .c-mi .c-dot{background:var(--bl);}
+.card.c-or .c-mi .c-dot{background:var(--or);}
+.card.c-pu .c-mi .c-dot{background:var(--pu);}
+.card .c-arrow{position:absolute;bottom:28px;right:28px;font:600 20px/1 var(--mo);color:var(--t3);transition:all .3s;}
+.card:hover .c-arrow{color:var(--cy);transform:translateX(4px);}
+.team{background:var(--cd);border:1px solid var(--bd);border-radius:16px;padding:32px;margin-bottom:32px;}
+.team h3{font:700 13px/1 var(--mo);letter-spacing:1.2px;text-transform:uppercase;color:var(--t2);margin-bottom:16px;}
+.team p{font:400 13px/1.6 var(--sa);color:var(--t3);}
+.ft{text-align:center;padding:32px;font:500 11px/1.4 var(--mo);color:var(--t3);}
+.ft a{color:var(--cy);text-decoration:none;}
+@media(max-width:768px){.grid{grid-template-columns:1fr;}.w{padding:24px 16px;}.hdr h1{font-size:28px;}}
+.card.c-cc::before{background:linear-gradient(90deg,#ff4757,#ff9f43,#f1c40f);}
+.card.c-cc::after{background:radial-gradient(circle at 50% 50%,rgba(255,71,87,.06),transparent 60%);}
+.card.c-cc .c-mi .c-dot{background:#ff4757;}
+.card.c-cc .c-tag{background:rgba(255,71,87,.1);color:#ff4757;}
+</style>
+</head>
+<body>
+<div class="w">
+  <div class="hdr">
+    <div class="logo">SmartSign USA</div>
+    <h1>Amazon Ads<br>Dashboard Hub</h1>
+    <div class="sub">One link. All reports. Real-time data from your team's daily updates — no discrepancies, no double-handling.</div>
+  </div>
+  <div class="grid">
+    <a href="command_center.html" class="card c-cc" style="grid-column:1/-1;">
+      <span class="c-icon">🎯</span>
+      <span class="c-tag" style="background:rgba(255,71,87,.1);color:#ff4757;">Command Center</span>
+      <div class="c-title">Campaign Command Center</div>
+      <div class="c-desc">The decision engine for 2,500+ campaigns. Dynamic date selection, period-over-period comparison, auto-triage into Critical/Watch/Steady/Winner/Star buckets, ASIN intelligence, search term bleeders, opportunity finder, and action tracker with before/after impact measurement. Not a dashboard — a growth tool.</div>
+      <div class="c-meta">
+        <span class="c-mi"><span class="c-dot" style="background:#ff4757;"></span>2,696 Campaigns</span>
+        <span class="c-mi"><span class="c-dot" style="background:#ff4757;"></span>Date Comparison</span>
+        <span class="c-mi"><span class="c-dot" style="background:#ff4757;"></span>Action Tracker</span>
+        <span class="c-mi"><span class="c-dot" style="background:#ff4757;"></span>Updated Weekly</span>
+      </div>
+      <span class="c-arrow">→</span>
+    </a>
+    <a href="wow.html" class="card c-bl">
+      <span class="c-icon">📊</span>
+      <span class="c-tag">Weekly</span>
+      <div class="c-title">Weekly Performance (WoW)</div>
+      <div class="c-desc">The Monday email, visualized. SC + VC combined and individual views with 15 weeks of rolling data — ad spend, ROAS, T-Sales, organic growth, and channel breakdowns. Compare this week vs last week at a glance.</div>
+      <div class="c-meta">
+        <span class="c-mi"><span class="c-dot"></span>SC + VC + Combined</span>
+        <span class="c-mi"><span class="c-dot"></span>15 Weeks Rolling</span>
+        <span class="c-mi"><span class="c-dot"></span>Updated Mondays</span>
+      </div>
+      <span class="c-arrow">→</span>
+    </a>
+    <a href="spend.html" class="card c-cy">
+      <span class="c-icon">💰</span>
+      <span class="c-tag">Daily</span>
+      <div class="c-title">Spend Tracker</div>
+      <div class="c-desc">Daily ad spend pacing against monthly budget with day-of-week aligned YoY comparison. Wallet balance, cumulative pacing chart, heatmap view, and event markers for outages and holidays. SC and VC tracked separately.</div>
+      <div class="c-meta">
+        <span class="c-mi"><span class="c-dot"></span>Day-of-Week YoY</span>
+        <span class="c-mi"><span class="c-dot"></span>Budget Pacing</span>
+        <span class="c-mi"><span class="c-dot"></span>Updated Daily</span>
+      </div>
+      <span class="c-arrow">→</span>
+    </a>
+    <a href="oos.html" class="card c-or">
+      <span class="c-icon">📦</span>
+      <span class="c-tag">Inventory</span>
+      <div class="c-title">Inventory & OOS Impact</div>
+      <div class="c-desc">Track 14,500+ ASINs across 31 categories — active vs inactive status over 15 weeks, with YoY revenue impact analysis showing exactly how much revenue is lost from OOS products. Drill down by category, subcategory, and fulfillment type.</div>
+      <div class="c-meta">
+        <span class="c-mi"><span class="c-dot"></span>14,500+ ASINs</span>
+        <span class="c-mi"><span class="c-dot"></span>YoY Revenue Impact</span>
+        <span class="c-mi"><span class="c-dot"></span>Updated Mondays</span>
+      </div>
+      <span class="c-arrow">→</span>
+    </a>
+    <a href="hourly.html" class="card c-pu">
+      <span class="c-icon">⏱️</span>
+      <span class="c-tag">Dayparting</span>
+      <div class="c-title">Hourly Spend & Sales</div>
+      <div class="c-desc">Hourly SP spend curves, dead zone detection, and multi-cap budget experiment tracking. See exactly when ads run out of budget and how afternoon revenue responds to cap adjustments.</div>
+      <div class="c-meta">
+        <span class="c-mi"><span class="c-dot"></span>24-Hour Heatmaps</span>
+        <span class="c-mi"><span class="c-dot"></span>Dead Zone Alerts</span>
+        <span class="c-mi"><span class="c-dot"></span>Updated Weekly</span>
+      </div>
+      <span class="c-arrow">→</span>
+    </a>
+  </div>
+  <div class="team">
+    <h3>How It Works</h3>
+    <p>Each dashboard reads from a structured data file (CSV or JSON) hosted alongside it. Your team updates the data file from Amazon Ads and Seller Central as part of the existing workflow — same copy-paste, same sources. Upload the updated file to GitHub and the dashboard reflects the latest numbers instantly. One source of truth, zero discrepancies.</p>
+  </div>
+  <div class="ft">
+    SmartSign USA · Amazon Ads Dashboard Hub · Powered by <a href="#">GitHub Pages</a><br>
+    <span style="margin-top:8px;display:inline-block;opacity:.6;">Built for the SmartSign Ads & Selva Marketplaces team</span>
+  </div>
+</div>
+</body>
+</html>
