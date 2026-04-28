@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartSign — Campaign Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050810;--cd:#0c1020;--cd2:#101728;--hv:#151e38;--sf:#080d18;--bd:#182040;--bd2:#253560;--t1:#eef2ff;--t2:#b0bfe0;--t3:#5c6f96;--tw:#fff;--cy:#00e5c8;--or:#ff9f43;--rd:#ff4757;--gn:#2ecc71;--pu:#a78bfa;--yl:#f1c40f;--bl:#60a5fa;--mo:'JetBrains Mono',monospace;--sa:'DM Sans',sans-serif;}
+*{margin:0;padding:0;box-sizing:border-box;}body{background:var(--bg);color:var(--t1);font-family:var(--sa);min-height:100vh;}
+::selection{background:var(--cy);color:var(--bg);}::-webkit-scrollbar{width:6px;height:6px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px;}
+.w{max-width:1600px;margin:0 auto;padding:20px 28px;}
+.hdr{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--bd);}
+.hdr-l .cr{font:600 10px/1 var(--mo);letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:8px;}.cr a{color:var(--cy);text-decoration:none;}
+.hdr-l h1{font:800 26px/1.1 var(--mo);color:var(--tw);}.hdr-l h1 span{background:linear-gradient(135deg,var(--rd),var(--or),var(--yl));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+/* Date picker bar */
+.dp-bar{display:flex;gap:10px;align-items:center;margin-bottom:18px;}
+.dp-presets{display:flex;gap:6px;flex-wrap:wrap;}
+.dp-btn{font:600 11px/1 var(--mo);padding:7px 14px;border-radius:6px;border:1px solid var(--bd);background:var(--cd2);color:var(--t2);cursor:pointer;transition:all .2s;white-space:nowrap;}
+.dp-btn:hover{border-color:var(--cy);color:var(--cy);}.dp-btn.active{border-color:var(--cy);color:var(--cy);background:rgba(0,229,200,.08);}
+.dp-sep{width:1px;height:28px;background:var(--bd);margin:0 6px;}
+.dp-range{display:flex;align-items:center;gap:8px;}
+.dp-input{background:var(--cd2);border:1px solid var(--bd);color:var(--t1);padding:7px 10px;border-radius:6px;font:500 12px/1 var(--mo);width:120px;outline:none;}.dp-input:focus{border-color:var(--cy);}
+.dp-lbl{font:600 10px/1 var(--mo);color:var(--t3);letter-spacing:1px;text-transform:uppercase;}
+.dp-vs{font:700 11px/1 var(--mo);color:var(--or);padding:0 4px;}
+.dp-compare{display:flex;align-items:center;gap:8px;margin-left:8px;}
+.dp-toggle{font:600 10px/1 var(--mo);padding:6px 12px;border-radius:6px;border:1px solid var(--bd);background:var(--cd2);color:var(--t3);cursor:pointer;}.dp-toggle.on{border-color:var(--or);color:var(--or);background:rgba(255,159,67,.08);}
+/* Triage */
+.tri{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
+.tc{background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:16px 14px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.tc:hover{transform:translateY(-2px);}.tc.active{border-width:2px;}
+.tc::before{content:'';position:absolute;top:0;left:0;width:100%;height:3px;}
+.tc.tr-cr::before{background:var(--rd);}.tc.tr-cr.active{border-color:var(--rd);}
+.tc.tr-wa::before{background:var(--or);}.tc.tr-wa.active{border-color:var(--or);}
+.tc.tr-st::before{background:var(--yl);}.tc.tr-st.active{border-color:var(--yl);}
+.tc.tr-wi::before{background:var(--gn);}.tc.tr-wi.active{border-color:var(--gn);}
+.tc.tr-sa::before{background:var(--cy);}.tc.tr-sa.active{border-color:var(--cy);}
+.tc .tc-i{font-size:18px;margin-bottom:6px;}.tc .tc-l{font:700 9px/1 var(--mo);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.tc.tr-cr .tc-l{color:var(--rd);}.tc.tr-wa .tc-l{color:var(--or);}.tc.tr-st .tc-l{color:var(--yl);}.tc.tr-wi .tc-l{color:var(--gn);}.tc.tr-sa .tc-l{color:var(--cy);}
+.tc .tc-c{font:800 24px/1 var(--mo);color:var(--tw);margin-bottom:4px;}.tc .tc-s{font:500 10px/1 var(--mo);color:var(--t2);}
+/* Summary */
+.sbar{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-bottom:20px;}
+.sb{background:var(--cd);border:1px solid var(--bd);border-radius:10px;padding:14px;text-align:center;}
+.sb .sl{font:600 8px/1 var(--mo);letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:6px;}
+.sb .sv{font:800 18px/1 var(--mo);color:var(--tw);}
+.sb .sd{font:500 10px/1 var(--mo);margin-top:4px;}.sb .sd.up{color:var(--gn);}.sb .sd.dn{color:var(--rd);}
+/* Filters + search */
+.fbar{display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap;}
+.srch{background:var(--cd);border:1px solid var(--bd);color:var(--t1);padding:9px 14px;border-radius:8px;font:500 12px/1 var(--mo);outline:none;width:240px;}.srch:focus{border-color:var(--cy);}
+.sel{background:var(--cd);border:1px solid var(--bd);color:var(--t1);padding:9px 28px 9px 10px;border-radius:8px;font:500 11px/1 var(--mo);cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%235c6f96' stroke-width='3'%3E%3Cpolyline points='6,9 12,15 18,9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;}.sel:hover{border-color:var(--cy);}
+/* Tabs */
+.tabs{display:flex;gap:2px;margin-bottom:16px;border-bottom:1px solid var(--bd);}
+.tab{font:600 11px/1 var(--mo);letter-spacing:.5px;padding:10px 18px;cursor:pointer;color:var(--t3);border-bottom:2px solid transparent;transition:all .2s;}
+.tab:hover{color:var(--t1);}.tab.active{color:var(--cy);border-bottom-color:var(--cy);}
+.tab .badge{display:inline-block;background:var(--rd);color:#fff;font:700 9px/1 var(--mo);padding:2px 6px;border-radius:10px;margin-left:5px;}
+/* Section */
+.sc{background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:20px;margin-bottom:16px;}
+.sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}.st{font:700 11px/1 var(--mo);letter-spacing:1.2px;text-transform:uppercase;color:var(--t2);}
+/* Table */
+.tw{overflow-x:auto;}table{width:100%;border-collapse:collapse;font-family:var(--mo);}
+thead th{padding:8px 8px;text-align:right;font:700 8px/1 var(--mo);text-transform:uppercase;letter-spacing:1px;color:var(--t3);border-bottom:2px solid var(--bd2);white-space:nowrap;cursor:pointer;user-select:none;}
+thead th:first-child,thead th:nth-child(2),thead th:nth-child(3){text-align:left;}
+thead th:hover{color:var(--cy);}thead th.sa::after{content:' ▲';color:var(--cy);font-size:7px;}thead th.sd::after{content:' ▼';color:var(--cy);font-size:7px;}
+tbody td{padding:7px 8px;text-align:right;font:500 11px/1.2 var(--mo);color:var(--t2);border-bottom:1px solid #18204044;white-space:nowrap;}
+tbody td:first-child{text-align:left;color:var(--t1);font-weight:600;max-width:260px;overflow:hidden;text-overflow:ellipsis;}
+tbody td:nth-child(2),tbody td:nth-child(3){text-align:left;font-size:10px;}
+tbody tr{cursor:pointer;transition:background .15s;}tbody tr:hover{background:var(--hv);}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;}
+.dot-cr{background:var(--rd);}.dot-wa{background:var(--or);}.dot-st{background:var(--yl);}.dot-wi{background:var(--gn);}.dot-sa{background:var(--cy);}
+.up{color:var(--gn);}.dn{color:var(--rd);}.nu{color:var(--yl);}
+/* Delta columns */
+.delta{font-size:9px;font-weight:700;margin-left:4px;}
+/* Modal */
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:30px 20px;overflow-y:auto;}
+.mbg.show{display:flex;}
+.mdl{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:28px;width:95%;max-width:1100px;margin-bottom:40px;position:relative;}
+.mdl .cls{position:absolute;top:14px;right:18px;font:700 18px/1 var(--mo);color:var(--t3);cursor:pointer;background:none;border:none;}.mdl .cls:hover{color:var(--cy);}
+.mdl h2{font:700 16px/1.2 var(--mo);color:var(--tw);margin-bottom:4px;}
+.mdl .ms{font:500 11px/1 var(--mo);color:var(--t3);margin-bottom:16px;}
+.mg{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:16px;}
+.mc{background:var(--cd2);border:1px solid var(--bd);border-radius:8px;padding:10px;text-align:center;}
+.mc .ml{font:600 7px/1 var(--mo);letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:5px;}
+.mc .mv{font:700 15px/1 var(--mo);color:var(--tw);}.mc .md{font:500 9px/1 var(--mo);margin-top:3px;}
+/* Opp */
+.opp{background:var(--cd2);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin-bottom:8px;transition:all .2s;cursor:pointer;}
+.opp:hover{border-color:var(--cy);}
+.opp-h{display:flex;gap:10px;align-items:flex-start;}
+.opp-i{font-size:20px;flex-shrink:0;}.opp-cn{font:600 12px/1.3 var(--mo);color:var(--tw);margin-bottom:3px;}.opp-m{font:400 12px/1.5 var(--sa);color:var(--t2);}
+.opp-t{display:inline-block;font:700 8px/1 var(--mo);letter-spacing:1px;text-transform:uppercase;padding:3px 7px;border-radius:4px;margin-top:5px;}
+.opp-t.hi{background:rgba(255,71,87,.1);color:var(--rd);}.opp-t.md{background:rgba(255,159,67,.1);color:var(--or);}
+/* Action tracker */
+.act-row{display:grid;grid-template-columns:100px 1fr 120px 100px;gap:10px;padding:10px 0;border-bottom:1px solid var(--bd);align-items:center;font:500 11px/1.3 var(--mo);color:var(--t2);}
+.act-row .act-cn{color:var(--t1);font-weight:600;}
+.act-btn{font:600 10px/1 var(--mo);padding:6px 12px;border-radius:6px;border:1px solid var(--cy);background:transparent;color:var(--cy);cursor:pointer;}.act-btn:hover{background:rgba(0,229,200,.1);}
+.act-btn.del{border-color:var(--rd);color:var(--rd);}.act-btn.del:hover{background:rgba(255,71,87,.1);}
+/* Bleeder stats */
+.bls{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;}
+.bl{background:var(--cd2);border:1px solid var(--bd);border-radius:10px;padding:16px;text-align:center;}
+.bl .bll{font:600 8px/1 var(--mo);letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:6px;}
+.bl .blv{font:800 20px/1 var(--mo);color:var(--rd);}.bl .bld{font:500 10px/1 var(--mo);color:var(--t2);margin-top:4px;}
+.ft{text-align:center;padding:24px;font:500 10px/1 var(--mo);color:var(--t3);border-top:1px solid var(--bd);margin-top:20px;}
+/* Date picker bar — compact */
+.dp-cur{font:600 12px/1 var(--mo);padding:9px 14px;border-radius:8px;border:1px solid var(--cy);background:rgba(0,229,200,.06);color:var(--cy);cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s;}
+.dp-cur:hover{background:rgba(0,229,200,.14);}
+.dp-cur .vs{color:var(--or);font-weight:700;padding:0 4px;}
+.dp-cur .b{color:var(--or);}
+.dp-cur .caret{color:var(--t3);font-size:9px;}
+
+/* Triage info button + popover */
+.tc{position:relative;}
+.tc-info{position:absolute;top:7px;right:7px;width:18px;height:18px;border-radius:50%;background:var(--bd2);color:var(--t2);font:700 10px var(--sa);display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;z-index:5;transition:all .2s;}
+.tc-info:hover{background:var(--cy);color:var(--bg);transform:scale(1.1);}
+.tc-pop{position:absolute;top:32px;right:6px;width:280px;background:var(--cd2);border:1px solid var(--bd2);border-radius:10px;padding:14px;z-index:50;display:none;text-align:left;box-shadow:0 12px 40px rgba(0,0,0,.7);}
+.tc-pop.show{display:block;}
+.tc-pop .pop-t{font:700 10px var(--mo);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--bd);}
+.tc.tr-cr .tc-pop .pop-t{color:var(--rd);}
+.tc.tr-wa .tc-pop .pop-t{color:var(--or);}
+.tc.tr-st .tc-pop .pop-t{color:var(--yl);}
+.tc.tr-wi .tc-pop .pop-t{color:var(--gn);}
+.tc.tr-sa .tc-pop .pop-t{color:var(--cy);}
+.tc-pop .pop-l{font:500 11px/1.5 var(--sa);color:var(--t2);padding:5px 0;display:flex;gap:8px;align-items:flex-start;}
+.tc-pop .pop-l::before{content:'•';color:var(--t3);font-weight:700;flex-shrink:0;}
+
+/* Filter status banner */
+.fbn{display:flex;align-items:center;gap:10px;background:var(--cd);border:1px solid var(--bd);border-radius:10px;padding:11px 16px;margin-bottom:14px;font:600 11px/1 var(--mo);}
+.fbn.tr-cr{border-left:3px solid var(--rd);}
+.fbn.tr-wa{border-left:3px solid var(--or);}
+.fbn.tr-st{border-left:3px solid var(--yl);}
+.fbn.tr-wi{border-left:3px solid var(--gn);}
+.fbn.tr-sa{border-left:3px solid var(--cy);}
+.fbn .fbn-l{color:var(--t2);text-transform:uppercase;letter-spacing:1px;}
+.fbn .fbn-v{color:var(--tw);font-weight:700;}
+.fbn .fbn-x{margin-left:auto;background:none;border:1px solid var(--bd2);color:var(--t3);padding:5px 11px;border-radius:5px;cursor:pointer;font:600 10px var(--mo);transition:all .2s;}
+.fbn .fbn-x:hover{border-color:var(--rd);color:var(--rd);}
+
+/* Calendar Modal */
+.cal-bg{position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto;}
+.cal-bg.show{display:flex;}
+.cal-mdl{background:var(--cd);border:1px solid var(--bd);border-radius:14px;width:100%;max-width:920px;}
+.cal-h{display:flex;justify-content:space-between;align-items:center;padding:16px 22px;border-bottom:1px solid var(--bd);gap:18px;}
+.cal-h-l h3{font:700 12px/1 var(--mo);color:var(--tw);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px;}
+.cal-h-l .cur{font:600 12px/1 var(--mo);color:var(--cy);}
+.cal-h-l .cur .b{color:var(--or);}
+.cal-h-r{display:flex;gap:14px;align-items:center;}
+.cal-cmp{display:flex;align-items:center;gap:9px;font:700 11px var(--mo);color:var(--t2);text-transform:uppercase;letter-spacing:.5px;}
+.sw{position:relative;display:inline-block;width:38px;height:20px;}
+.sw input{opacity:0;width:0;height:0;}
+.sw .sl{position:absolute;cursor:pointer;inset:0;background:var(--bd2);transition:.2s;border-radius:20px;}
+.sw .sl:before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:var(--t1);transition:.2s;border-radius:50%;}
+.sw input:checked + .sl{background:var(--cy);}
+.sw input:checked + .sl:before{transform:translateX(18px);background:var(--bg);}
+.cal-x{background:none;border:none;color:var(--t3);font:700 18px var(--mo);cursor:pointer;line-height:1;}.cal-x:hover{color:var(--cy);}
+
+.cal-body{display:grid;grid-template-columns:160px 1fr;gap:18px;padding:18px 22px;}
+.cal-presets{display:flex;flex-direction:column;gap:3px;}
+.cal-pre{font:600 11px var(--mo);padding:10px 12px;border-radius:6px;color:var(--t2);cursor:pointer;transition:all .15s;}
+.cal-pre:hover{background:var(--cd2);color:var(--t1);}
+.cal-pre.act{background:rgba(0,229,200,.10);color:var(--cy);}
+
+.cal-panes{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.cal-panes.solo{grid-template-columns:1fr;max-width:380px;}
+.cal-pn{background:var(--cd2);border:1px solid var(--bd);border-radius:10px;padding:14px;}
+.cal-pn-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.cal-pn-h .l{font:700 10px/1 var(--mo);color:var(--cy);text-transform:uppercase;letter-spacing:1.2px;}
+.cal-pn.b .cal-pn-h .l{color:var(--or);}
+.cal-pn-h .len{font:600 10px var(--mo);color:var(--t3);}
+.cal-pn-d{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.cal-pn-d label{font:700 8px var(--mo);color:var(--t3);text-transform:uppercase;letter-spacing:1.5px;display:block;margin-bottom:4px;}
+.cal-pn-d input{background:var(--cd);border:1px solid var(--bd);color:var(--t1);padding:7px 9px;border-radius:5px;font:500 11px var(--mo);width:100%;outline:none;}
+.cal-pn-d input.act{border-color:var(--cy);}
+.cal-pn.b .cal-pn-d input.act{border-color:var(--or);}
+.cal-nav{display:flex;justify-content:space-between;align-items:center;padding:6px 0 8px;}
+.cal-nav button{background:none;border:none;color:var(--t2);cursor:pointer;font:700 13px var(--mo);padding:4px 10px;border-radius:4px;}
+.cal-nav button:hover:not(:disabled){background:var(--cd);color:var(--cy);}
+.cal-nav button:disabled{color:var(--t3);opacity:.3;cursor:not-allowed;}
+.cal-nav .m{font:700 12px var(--mo);color:var(--tw);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;}
+.cal-d{font:500 11px var(--mo);text-align:center;padding:7px 0;color:var(--t3);min-height:30px;display:flex;align-items:center;justify-content:center;}
+.cal-d.h{font:700 9px var(--mo);text-transform:uppercase;color:var(--t3);padding-bottom:4px;}
+.cal-d.dy{color:var(--t1);cursor:pointer;border-radius:50%;transition:all .12s;}
+.cal-d.dy:hover{background:var(--hv);color:var(--cy);}
+.cal-d.dis{color:var(--t3);opacity:.25;cursor:not-allowed;}
+.cal-d.dis:hover{background:none;color:var(--t3);}
+.cal-d.in-r{background:rgba(0,229,200,.12);border-radius:0;color:var(--t1);}
+.cal-d.s,.cal-d.e{background:var(--cy)!important;color:var(--bg)!important;font-weight:700;border-radius:50%;}
+.cal-pn.b .cal-d.in-r{background:rgba(255,159,67,.12);}
+.cal-pn.b .cal-d.s,.cal-pn.b .cal-d.e{background:var(--or)!important;}
+
+.cal-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 22px;border-top:1px solid var(--bd);}
+.cal-foot .hint{font:500 10px var(--mo);color:var(--t3);}
+.cal-foot-r{display:flex;gap:10px;}
+.cal-foot .btn{font:700 11px var(--mo);padding:9px 18px;border-radius:6px;border:1px solid var(--bd2);background:transparent;color:var(--t2);cursor:pointer;transition:all .15s;text-transform:uppercase;letter-spacing:.5px;}
+.cal-foot .btn:hover{border-color:var(--cy);color:var(--cy);}
+.cal-foot .btn.pri{background:var(--cy);color:var(--bg);border-color:var(--cy);}
+.cal-foot .btn.pri:hover{background:#00c4ab;border-color:#00c4ab;}
+
+/* Opportunities filter pills */
+.opp-filt{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:18px;}
+.opp-pl{background:var(--cd);border:1px solid var(--bd);border-radius:10px;padding:13px 14px;cursor:pointer;text-align:left;transition:all .2s;position:relative;overflow:hidden;}
+.opp-pl::before{content:'';position:absolute;top:0;left:0;width:100%;height:3px;}
+.opp-pl.active{border-width:2px;padding:12px 13px;}
+.opp-pl:hover{transform:translateY(-2px);}
+.opp-pl.t-scale::before{background:var(--gn);}.opp-pl.t-scale.active{border-color:var(--gn);}
+.opp-pl.t-bids::before{background:var(--cy);}.opp-pl.t-bids.active{border-color:var(--cy);}
+.opp-pl.t-fix::before{background:var(--rd);}.opp-pl.t-fix.active{border-color:var(--rd);}
+.opp-pl.t-asin::before{background:var(--or);}.opp-pl.t-asin.active{border-color:var(--or);}
+.opp-pl.t-decline::before{background:var(--pu);}.opp-pl.t-decline.active{border-color:var(--pu);}
+.opp-pl.t-multi::before{background:linear-gradient(90deg,var(--rd),var(--or),var(--yl),var(--cy));}.opp-pl.t-multi.active{border-color:var(--yl);}
+.opp-pl .pl-i{font-size:18px;}
+.opp-pl .pl-l{font:700 9px/1 var(--mo);text-transform:uppercase;letter-spacing:1.2px;margin-top:6px;}
+.opp-pl.t-scale .pl-l{color:var(--gn);}.opp-pl.t-bids .pl-l{color:var(--cy);}.opp-pl.t-fix .pl-l{color:var(--rd);}.opp-pl.t-asin .pl-l{color:var(--or);}.opp-pl.t-decline .pl-l{color:var(--pu);}.opp-pl.t-multi .pl-l{color:var(--yl);}
+.opp-pl .pl-c{font:800 22px/1 var(--mo);color:var(--tw);margin-top:8px;}
+.opp-pl .pl-s{font:500 10px/1 var(--mo);color:var(--t3);margin-top:5px;}
+
+/* Multi-action badges */
+.ma-bdg{display:inline-block;font:700 8px/1 var(--mo);padding:3px 6px;border-radius:3px;margin:0 2px 0 0;text-transform:uppercase;letter-spacing:.5px;}
+.ma-bdg.scale{background:rgba(46,204,113,.15);color:var(--gn);}
+.ma-bdg.bids{background:rgba(0,229,200,.15);color:var(--cy);}
+.ma-bdg.fix{background:rgba(255,71,87,.15);color:var(--rd);}
+.ma-bdg.asin{background:rgba(255,159,67,.15);color:var(--or);}
+.ma-bdg.decline{background:rgba(167,139,250,.15);color:var(--pu);}
+
+@media(max-width:1200px){.tri{grid-template-columns:repeat(3,1fr);}.sbar{grid-template-columns:repeat(4,1fr);}.mg{grid-template-columns:repeat(4,1fr);}.opp-filt{grid-template-columns:repeat(3,1fr);}.cal-body{grid-template-columns:1fr;}.cal-presets{flex-direction:row;flex-wrap:wrap;}.cal-panes{grid-template-columns:1fr;}}
+@media(max-width:768px){.tri{grid-template-columns:1fr 1fr;}.sbar{grid-template-columns:1fr 1fr;}.hdr{flex-direction:column;gap:12px;}.w{padding:12px;}.dp-bar{flex-direction:column;}.opp-filt{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<div class="w">
+<div class="hdr"><div class="hdr-l"><div class="cr"><a href="index.html">← Dashboard Hub</a> / Command Center</div><h1>Campaign <span>Command Center</span></h1></div></div>
+<div class="dp-bar" id="dpBar"></div>
+<div class="tri" id="triCards"></div>
+<div class="sbar" id="sumBar"></div>
+<div class="fbar"><input class="srch" id="search" placeholder="Search campaigns or portfolios..." /><select class="sel" id="pfF"><option value="">All Portfolios</option></select><select class="sel" id="trF"><option value="">All Status</option><option value="cr">🔴 Critical</option><option value="wa">🟠 Watch</option><option value="st">🟡 Steady</option><option value="wi">🟢 Winner</option><option value="sa">⭐ Star</option></select><select class="sel" id="sortF"><option value="spend_desc">Spend ↓</option><option value="spend_asc">Spend ↑</option><option value="roas_desc">ROAS ↓</option><option value="roas_asc">ROAS ↑</option><option value="acos_asc">ACOS ↑</option><option value="acos_desc">ACOS ↓</option><option value="orders_desc">Orders ↓</option><option value="sales_desc">Sales ↓</option></select></div>
+<div class="tabs" id="tabs"></div>
+<div id="content"></div>
+<div class="ft">SmartSign USA · Campaign Command Center · Data: Jan 1 – Mar 31, 2026</div>
+</div>
+<div class="mbg" id="mbg"><div class="mdl"><button class="cls" id="mcl">✕</button><div id="mc"></div></div></div>
+<div class="cal-bg" id="calBg"><div class="cal-mdl" id="calMdl"></div></div>
+<script>
+const FILE='cc_data.json';let D={},PA={s:'',e:''},PB=null,CMP=false,TRI='',TAB='campaigns',ACTIONS=[];
+const $=s=>document.querySelector(s);
+const F={
+m:n=>{if(!n&&n!==0||isNaN(n))return'—';const a=Math.abs(n);return(n<0?'-':'')+'$'+(a>=1e6?(a/1e6).toFixed(2)+'M':a>=1e3?(a/1e3).toFixed(1)+'K':Math.round(a).toLocaleString());},
+d:n=>(!n&&n!==0||isNaN(n))?'—':'$'+Math.round(n).toLocaleString(),
+r:n=>(!n||isNaN(n)||!isFinite(n))?'—':n.toFixed(2)+'x',
+p:n=>(!n||isNaN(n)||n>=999)?'—':n.toFixed(1)+'%',
+n:n=>n==null?'—':Math.round(n).toLocaleString(),
+rc:n=>!n||n>=999?'':n<1?'dn':n<2?'dn':n<3?'nu':'up',
+ac:n=>!n||n>=999?'':n>35?'dn':n>24?'nu':'up',
+dl:(a,b)=>{if(!b||b===0)return{t:'',c:''};const d=((a-b)/Math.abs(b))*100;return{t:(d>=0?'+':'')+d.toFixed(1)+'%',c:d>=0?'up':'dn'};}
+};
+
+// Aggregate campaign data for a date range
+function agg(camp,s,e){
+  let imp=0,clicks=0,spend=0,orders=0,sales=0;
+  const days=camp.d;
+  for(const[dt,v]of Object.entries(days)){
+    if(dt>=s&&dt<=e){imp+=v.i;clicks+=v.c;spend+=v.s;orders+=v.o;sales+=v.r;}
+  }
+  return{imp,clicks,spend:Math.round(spend*100)/100,orders,sales:Math.round(sales*100)/100,
+    acos:sales>0?Math.round(spend/sales*1000)/10:spend>0?999:0,
+    roas:spend>0?Math.round(sales/spend*100)/100:0,
+    cpc:clicks>0?Math.round(spend/clicks*100)/100:0,
+    ctr:imp>0?Math.round(clicks/imp*10000)/100:0,
+    cvr:clicks>0?Math.round(orders/clicks*1000)/10:0};
+}
+
+// Triage scoring
+function triage(m,camp){
+  if(m.spend===0&&m.imp===0)return{b:'in',r:'No activity'};
+  if(m.spend>50&&m.orders===0)return{b:'cr',r:`$${Math.round(m.spend)} spent, 0 orders`};
+  if(m.spend>200&&m.roas<0.5&&m.roas>0)return{b:'cr',r:`ROAS ${m.roas}x on $${Math.round(m.spend)}`};
+  if(m.spend>100&&m.acos>80&&m.acos<999)return{b:'cr',r:`ACOS ${m.acos}%`};
+  if(m.spend>30&&m.orders===0)return{b:'cr',r:`$${Math.round(m.spend)} wasted, 0 orders`};
+  if(m.clicks>20&&m.orders===0)return{b:'cr',r:`${m.clicks} clicks, 0 orders — CVR issue`};
+  if(m.roas>=5&&m.spend>=100)return{b:'sa',r:`ROAS ${m.roas}x on $${Math.round(m.spend)}`};
+  if(m.roas>=5&&m.orders>=3)return{b:'sa',r:`ROAS ${m.roas}x`};
+  if(m.roas>=3&&m.spend>=50)return{b:'wi',r:`ROAS ${m.roas}x, ACOS ${F.p(m.acos)}`};
+  if(m.roas>=3)return{b:'wi',r:`ROAS ${m.roas}x`};
+  if(m.roas>=2&&m.roas<3)return{b:'st',r:`ROAS ${m.roas}x — near 3x target`};
+  if(m.spend>50&&m.roas>=1&&m.roas<2)return{b:'wa',r:`ROAS ${m.roas}x — underperforming`};
+  if(m.spend>50&&m.acos>35&&m.acos<999)return{b:'wa',r:`ACOS ${m.acos}%`};
+  if(m.imp>5000&&m.ctr<0.15)return{b:'wa',r:`CTR ${m.ctr}% — targeting/creative issue`};
+  if(m.clicks>30&&m.cvr<3)return{b:'wa',r:`CVR ${m.cvr}% — listing issue`};
+  if(m.roas>0&&m.roas<2)return{b:'wa',r:`ROAS ${m.roas}x`};
+  if(m.spend>0)return{b:'st',r:`Review needed`};
+  return{b:'in',r:'Minimal activity'};
+}
+
+async function init(){
+  try{const r=await fetch(FILE);D=await r.json();
+  // Load saved actions
+  try{ACTIONS=JSON.parse(localStorage.getItem('cc_actions')||'[]');}catch(e){ACTIONS=[];}
+  // Set default period: last 30 days of data
+  const dates=D.dates;PA.e=dates[dates.length-1];
+  const d30=new Date(PA.e);d30.setDate(d30.getDate()-29);PA.s=d30.toISOString().split('T')[0];
+  if(PA.s<dates[0])PA.s=dates[0];
+  renderAll();}
+  catch(e){$('#content').innerHTML=`<p style="text-align:center;padding:60px;color:var(--rd);font:500 13px var(--mo)">Cannot load data: ${e.message}</p>`;}
+}
+
+function renderAll(){
+  renderDatePicker();
+  // Compute all campaign metrics for current period
+  D._computed=D.campaigns.map(c=>{
+    const m=agg(c,PA.s,PA.e);
+    const t=triage(m,c);
+    let cmp=null;
+    if(CMP&&PB){
+      const mb=agg(c,PB.s,PB.e);
+      cmp={m:mb,
+        d_spend:F.dl(m.spend,mb.spend),d_sales:F.dl(m.sales,mb.sales),
+        d_roas:F.dl(m.roas,mb.roas),d_orders:F.dl(m.orders,mb.orders)};
+    }
+    return{...c,m,t:t.b,reason:t.r,cmp};
+  });
+  // Populate portfolio filter
+  const pf=$('#pfF');const cur=pf.value;
+  pf.innerHTML='<option value="">All Portfolios</option>'+D.portfolios.map(p=>`<option value="${p}">${p}</option>`).join('');
+  pf.value=cur;
+  renderTriage();renderSummary();renderTabs();renderContent();
+}
+
+function renderDatePicker(){
+  // Compact summary button — opens modal
+  const fmt=d=>{const x=new Date(d+'T12:00:00');return x.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});};
+  const txt=CMP&&PB
+    ? `<span>${fmt(PA.s)} – ${fmt(PA.e)}</span><span class="vs">vs</span><span class="b">${fmt(PB.s)} – ${fmt(PB.e)}</span><span class="caret">▼</span>`
+    : `📅 <span>${fmt(PA.s)} – ${fmt(PA.e)}</span><span class="caret">▼</span>`;
+  $('#dpBar').innerHTML=`<button class="dp-cur" onclick="openCal()">${txt}</button>`;
+}
+
+// ==================== CALENDAR MODAL ====================
+let CAL={a:{s:'',e:''},b:{s:'',e:''},cmp:false,selA:'s',selB:'s',mA:'',mB:'',preset:''};
+
+function openCal(){
+  CAL.a={s:PA.s,e:PA.e};
+  CAL.cmp=CMP;
+  CAL.b=CMP&&PB?{s:PB.s,e:PB.e}:autoPB(PA.s,PA.e);
+  CAL.selA='s';CAL.selB='s';
+  CAL.mA=PA.s.substring(0,7)+'-01';
+  CAL.mB=CAL.b.s.substring(0,7)+'-01';
+  CAL.preset=detectPreset(PA.s,PA.e);
+  renderCalModal();
+  $('#calBg').classList.add('show');
+}
+function closeCal(){$('#calBg').classList.remove('show');}
+
+function autoPB(s,e){
+  const len=Math.round((new Date(e)-new Date(s))/86400000)+1;
+  const bE=new Date(s+'T12:00:00');bE.setDate(bE.getDate()-1);
+  const bS=new Date(bE);bS.setDate(bS.getDate()-len+1);
+  let bSs=ds(bS);if(bSs<D.dates[0])bSs=D.dates[0];
+  return{s:bSs,e:ds(bE)};
+}
+
+function detectPreset(s,e){
+  const dates=D.dates,last=dates[dates.length-1];
+  if(e!==last&&!(s==='2026-01-01'||s==='2026-02-01'||s==='2026-03-01'))return'';
+  const len=Math.round((new Date(e)-new Date(s))/86400000)+1;
+  if(e===last){
+    if(len===7)return'7d';
+    if(len===14)return'14d';
+    if(len===30)return'30d';
+  }
+  if(s==='2026-01-01'&&e==='2026-01-31')return'jan';
+  if(s==='2026-02-01'&&e==='2026-02-28')return'feb';
+  if(s==='2026-03-01'&&e==='2026-03-31')return'mar';
+  if(s==='2026-01-01'&&e===last)return'all';
+  // This/last month detect
+  const lm=last.substring(0,7);
+  if(s===lm+'-01'&&e===last)return'tm';
+  return'';
+}
+
+function renderCalModal(){
+  const presets=[
+    {l:'Last 7 days',k:'7d'},{l:'Last 14 days',k:'14d'},{l:'Last 30 days',k:'30d'},
+    {l:'This month',k:'tm'},{l:'Last month',k:'lm'},
+    {l:'January',k:'jan'},{l:'February',k:'feb'},{l:'March',k:'mar'},
+    {l:'Q1 (All)',k:'all'},{l:'Custom range',k:''}
+  ];
+  const lenA=Math.round((new Date(CAL.a.e)-new Date(CAL.a.s))/86400000)+1;
+  const lenB=Math.round((new Date(CAL.b.e)-new Date(CAL.b.s))/86400000)+1;
+  const fmt=d=>{const x=new Date(d+'T12:00:00');return`${String(x.getMonth()+1).padStart(2,'0')}/${String(x.getDate()).padStart(2,'0')}/${x.getFullYear()}`;};
+  const fmtH=d=>{const x=new Date(d+'T12:00:00');return x.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});};
+  const curHdr=CAL.cmp
+    ? `${fmtH(CAL.a.s)} – ${fmtH(CAL.a.e)} <span class="b">vs ${fmtH(CAL.b.s)} – ${fmtH(CAL.b.e)}</span>`
+    : `${fmtH(CAL.a.s)} – ${fmtH(CAL.a.e)}`;
+
+  $('#calMdl').innerHTML=`
+    <div class="cal-h">
+      <div class="cal-h-l"><h3>📅 Date Range</h3><div class="cur">${curHdr}</div></div>
+      <div class="cal-h-r">
+        <label class="cal-cmp">Compare<span class="sw"><input type="checkbox" ${CAL.cmp?'checked':''} onchange="toggleCalCompare()"><span class="sl"></span></span></label>
+        <button class="cal-x" onclick="closeCal()">✕</button>
+      </div>
+    </div>
+    <div class="cal-body">
+      <div class="cal-presets">
+        ${presets.map(p=>`<div class="cal-pre ${CAL.preset===p.k?'act':''}" onclick="applyCalPreset('${p.k}')">${p.l}</div>`).join('')}
+      </div>
+      <div class="cal-panes ${CAL.cmp?'':'solo'}">
+        ${renderCalPane('a','Primary')}
+        ${CAL.cmp?renderCalPane('b','Comparison'):''}
+      </div>
+    </div>
+    <div class="cal-foot">
+      <div class="hint">${CAL.cmp?`Both ranges must be same length · Currently ${lenA}d vs ${lenB}d`:`Click a date to set start, click again to set end`}</div>
+      <div class="cal-foot-r">
+        <button class="btn" onclick="closeCal()">Cancel</button>
+        <button class="btn pri" onclick="applyCalDates()">${CAL.cmp?'Compare':'Apply'}</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderCalPane(k,lbl){
+  const r=CAL[k];const m=k==='a'?CAL.mA:CAL.mB;const sel=k==='a'?CAL.selA:CAL.selB;
+  const len=Math.round((new Date(r.e)-new Date(r.s))/86400000)+1;
+  const fmt=d=>{const x=new Date(d+'T12:00:00');return`${String(x.getMonth()+1).padStart(2,'0')}/${String(x.getDate()).padStart(2,'0')}/${x.getFullYear()}`;};
+  return`<div class="cal-pn ${k==='b'?'b':''}">
+    <div class="cal-pn-h"><span class="l">${lbl}</span><span class="len">${len} days</span></div>
+    <div class="cal-pn-d">
+      <div><label>Start date</label><input type="text" class="${sel==='s'?'act':''}" value="${fmt(r.s)}" onclick="setCalSel('${k}','s')" readonly></div>
+      <div><label>End date</label><input type="text" class="${sel==='e'?'act':''}" value="${fmt(r.e)}" onclick="setCalSel('${k}','e')" readonly></div>
+    </div>
+    ${renderMonthGrid(k,m,r)}
+  </div>`;
+}
+
+function renderMonthGrid(k,monthStart,r){
+  const md=new Date(monthStart+'T12:00:00');
+  const yr=md.getFullYear(),mo=md.getMonth();
+  const firstDay=new Date(yr,mo,1).getDay();
+  const daysInMonth=new Date(yr,mo+1,0).getDate();
+  const monthLbl=md.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const minD=D.dates[0],maxD=D.dates[D.dates.length-1];
+  const prevDis=monthStart<=minD.substring(0,7)+'-01';
+  const nextDis=monthStart>=maxD.substring(0,7)+'-01';
+  let cells='';
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>{cells+=`<div class="cal-d h">${d}</div>`;});
+  for(let i=0;i<firstDay;i++)cells+='<div class="cal-d"></div>';
+  for(let d=1;d<=daysInMonth;d++){
+    const dt=`${yr}-${String(mo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dis=dt<minD||dt>maxD;
+    const isS=dt===r.s,isE=dt===r.e,inR=dt>r.s&&dt<r.e;
+    let cls='dy';if(dis)cls='dis';
+    if(isS)cls+=' s';else if(isE)cls+=' e';else if(inR)cls+=' in-r';
+    cells+=`<div class="cal-d ${cls}" ${dis?'':`onclick="pickCalDate('${k}','${dt}')"`}>${d}</div>`;
+  }
+  return`<div class="cal-nav">
+    <button onclick="navCalMonth('${k}',-1)" ${prevDis?'disabled':''}>‹</button>
+    <span class="m">${monthLbl}</span>
+    <button onclick="navCalMonth('${k}',1)" ${nextDis?'disabled':''}>›</button>
+  </div>
+  <div class="cal-grid">${cells}</div>`;
+}
+
+function navCalMonth(k,dir){
+  const cur=k==='a'?CAL.mA:CAL.mB;
+  const md=new Date(cur+'T12:00:00');md.setMonth(md.getMonth()+dir);
+  const ns=`${md.getFullYear()}-${String(md.getMonth()+1).padStart(2,'0')}-01`;
+  if(k==='a')CAL.mA=ns;else CAL.mB=ns;
+  renderCalModal();
+}
+
+function pickCalDate(k,dt){
+  const r=CAL[k];const sel=k==='a'?CAL.selA:CAL.selB;
+  if(sel==='s'){r.s=dt;if(dt>r.e)r.e=dt;if(k==='a')CAL.selA='e';else CAL.selB='e';}
+  else{if(dt<r.s){r.s=dt;}else{r.e=dt;}if(k==='a')CAL.selA='s';else CAL.selB='s';}
+  // If compare, lock B length to A length
+  if(CAL.cmp&&k==='a'){syncBLength();}
+  CAL.preset='';
+  renderCalModal();
+}
+
+function syncBLength(){
+  const lenA=Math.round((new Date(CAL.a.e)-new Date(CAL.a.s))/86400000)+1;
+  const bE=new Date(CAL.b.s+'T12:00:00');bE.setDate(bE.getDate()+lenA-1);
+  let bEs=ds(bE);if(bEs>D.dates[D.dates.length-1])bEs=D.dates[D.dates.length-1];
+  CAL.b.e=bEs;
+}
+
+function setCalSel(k,which){if(k==='a')CAL.selA=which;else CAL.selB=which;renderCalModal();}
+
+function toggleCalCompare(){
+  CAL.cmp=!CAL.cmp;
+  if(CAL.cmp&&(!CAL.b.s||!CAL.b.e)){CAL.b=autoPB(CAL.a.s,CAL.a.e);}
+  if(CAL.cmp){CAL.mB=CAL.b.s.substring(0,7)+'-01';}
+  renderCalModal();
+}
+
+function applyCalPreset(k){
+  const dates=D.dates,last=dates[dates.length-1],first=dates[0];
+  const ld=new Date(last+'T12:00:00');
+  let ns=CAL.a.s,ne=CAL.a.e;
+  if(k==='7d'){const d=new Date(ld);d.setDate(d.getDate()-6);ns=ds(d);ne=last;}
+  else if(k==='14d'){const d=new Date(ld);d.setDate(d.getDate()-13);ns=ds(d);ne=last;}
+  else if(k==='30d'){const d=new Date(ld);d.setDate(d.getDate()-29);ns=ds(d);ne=last;}
+  else if(k==='tm'){ns=last.substring(0,8)+'01';ne=last;}
+  else if(k==='lm'){const d=new Date(ld);d.setMonth(d.getMonth()-1);const m=d.getMonth(),y=d.getFullYear();ns=`${y}-${String(m+1).padStart(2,'0')}-01`;const le=new Date(y,m+1,0);ne=ds(le);}
+  else if(k==='jan'){ns='2026-01-01';ne='2026-01-31';}
+  else if(k==='feb'){ns='2026-02-01';ne='2026-02-28';}
+  else if(k==='mar'){ns='2026-03-01';ne='2026-03-31';}
+  else if(k==='all'){ns=first;ne=last;}
+  if(ns<first)ns=first;
+  CAL.a={s:ns,e:ne};
+  CAL.mA=ns.substring(0,7)+'-01';
+  CAL.preset=k;
+  if(CAL.cmp){CAL.b=autoPB(ns,ne);CAL.mB=CAL.b.s.substring(0,7)+'-01';}
+  renderCalModal();
+}
+
+function applyCalDates(){
+  PA={s:CAL.a.s,e:CAL.a.e};
+  CMP=CAL.cmp;
+  PB=CAL.cmp?{s:CAL.b.s,e:CAL.b.e}:null;
+  closeCal();
+  renderAll();
+}
+
+function setPreset(k){applyCalPreset(k);applyCalDates();}
+function ds(d){return d.toISOString().split('T')[0];}
+function toggleCompare(){
+  if(!CMP){CMP=true;PB=autoPB(PA.s,PA.e);}else{CMP=false;PB=null;}
+  renderAll();
+}
+function applyDates(){renderAll();}
+
+// Triage criteria — used in info popovers and stays in sync with triage() logic
+const TRI_CRIT={
+  cr:{n:'Critical',i:'🔴',rules:['$50+ spend with 0 orders','$200+ spend & ROAS below 0.5x','$100+ spend & ACOS above 80%','$30+ spend & 0 orders','20+ clicks & 0 orders (CVR issue)']},
+  wa:{n:'Watch',i:'🟠',rules:['$50+ spend & ROAS between 1x–2x','$50+ spend & ACOS above 35%','5,000+ impressions & CTR below 0.15%','30+ clicks & CVR below 3%','Any campaign with ROAS below 2x']},
+  st:{n:'Steady',i:'🟡',rules:['ROAS between 2x–3x (near target)','Active spend with no critical/watch flag']},
+  wi:{n:'Winners',i:'🟢',rules:['ROAS at or above 3x','$50+ spend with strong ROAS','Healthy ACOS, scalable']},
+  sa:{n:'Stars',i:'⭐',rules:['ROAS at or above 5x with $100+ spend','ROAS at or above 5x with 3+ orders','Top performers — protect and scale']}
+};
+let POP=''; // currently open popover key
+
+function renderTriage(){
+  const counts={cr:0,wa:0,st:0,wi:0,sa:0,in:0};
+  const spends={cr:0,wa:0,st:0,wi:0,sa:0,in:0};
+  D._computed.forEach(c=>{counts[c.t]=(counts[c.t]||0)+1;spends[c.t]=(spends[c.t]||0)+c.m.spend;});
+  const bs=[{k:'cr',i:'🔴',l:'Critical'},{k:'wa',i:'🟠',l:'Watch'},{k:'st',i:'🟡',l:'Steady'},{k:'wi',i:'🟢',l:'Winners'},{k:'sa',i:'⭐',l:'Stars'}];
+  $('#triCards').innerHTML=bs.map(b=>{
+    const crit=TRI_CRIT[b.k];
+    const popHtml=`<div class="tc-pop ${POP===b.k?'show':''}" onclick="event.stopPropagation()">
+      <div class="pop-t">${crit.i} ${crit.n} — Criteria</div>
+      ${crit.rules.map(r=>`<div class="pop-l">${r}</div>`).join('')}
+    </div>`;
+    return`<div class="tc tr-${b.k} ${TRI===b.k?'active':''}" onclick="toggleTri('${b.k}')">
+      <button class="tc-info" onclick="event.stopPropagation();togglePop('${b.k}')" title="Categorization criteria">i</button>
+      ${popHtml}
+      <div class="tc-i">${b.i}</div><div class="tc-l">${b.l}</div><div class="tc-c">${counts[b.k]||0}</div><div class="tc-s">${F.m(spends[b.k])} spend</div>
+    </div>`;
+  }).join('');
+}
+function toggleTri(k){TRI=TRI===k?'':k;$('#trF').value=TRI;POP='';renderTriage();renderSummary();renderContent();}
+function togglePop(k){POP=POP===k?'':k;renderTriage();}
+document.addEventListener('click',e=>{if(!e.target.closest('.tc-info')&&!e.target.closest('.tc-pop')){if(POP){POP='';renderTriage();}}});
+
+function renderSummary(){
+  // Subtotal banner if a triage filter is active
+  const trActive=TRI||$('#trF')?.value;
+  const banner=$('#fbn');
+  
+  // Compute summary on the active filter scope (excludes inactive)
+  let scope=D._computed.filter(c=>c.t!=='in');
+  if(trActive)scope=scope.filter(c=>c.t===trActive);
+  
+  const tI=scope.reduce((s,c)=>s+c.m.imp,0),tC=scope.reduce((s,c)=>s+c.m.clicks,0);
+  const tS=scope.reduce((s,c)=>s+c.m.spend,0),tO=scope.reduce((s,c)=>s+c.m.orders,0),tR=scope.reduce((s,c)=>s+c.m.sales,0);
+  const roas=tS>0?tR/tS:0,acos=tR>0?tS/tR*100:0;
+  let items=[{l:'Impressions',v:F.n(tI)},{l:'Clicks',v:F.n(tC)},{l:'Spend',v:F.m(tS)},{l:'Orders',v:F.n(tO)},{l:'Sales',v:F.m(tR)},{l:'ACOS',v:F.p(acos)},{l:'ROAS',v:F.r(roas)}];
+
+  if(CMP&&PB){
+    const bAll=scope.filter(c=>c.cmp);
+    const bS=bAll.reduce((s,c)=>s+(c.cmp?.m.spend||0),0);
+    const bR=bAll.reduce((s,c)=>s+(c.cmp?.m.sales||0),0);
+    const bO=bAll.reduce((s,c)=>s+(c.cmp?.m.orders||0),0);
+    const bRoas=bS>0?bR/bS:0;
+    items[2].d=F.dl(tS,bS);items[3].d=F.dl(tO,bO);items[4].d=F.dl(tR,bR);items[6].d=F.dl(roas,bRoas);
+  }
+
+  // Build filter banner HTML
+  let bannerHtml='';
+  if(trActive){
+    const c=TRI_CRIT[trActive];
+    bannerHtml=`<div class="fbn tr-${trActive}" id="fbn">
+      <span class="fbn-l">${c.i} ${c.n} subtotal —</span>
+      <span class="fbn-v">${scope.length} campaigns</span>
+      <span class="fbn-l" style="opacity:.5">·</span>
+      <span class="fbn-v">${F.m(tS)} spend</span>
+      <span class="fbn-l" style="opacity:.5">·</span>
+      <span class="fbn-v">${F.r(roas)} ROAS</span>
+      <span class="fbn-l" style="opacity:.5">·</span>
+      <span class="fbn-v">${F.p(acos)} ACOS</span>
+      <button class="fbn-x" onclick="clearTri()">✕ Clear filter</button>
+    </div>`;
+  }
+  // Inject banner before sumBar
+  let bn=$('#fbnH');if(!bn){bn=document.createElement('div');bn.id='fbnH';$('#sumBar').parentNode.insertBefore(bn,$('#sumBar'));}
+  bn.innerHTML=bannerHtml;
+
+  $('#sumBar').innerHTML=items.map(i=>`<div class="sb"><div class="sl">${i.l}</div><div class="sv">${i.v}</div>${i.d?`<div class="sd ${i.d.c}">${i.d.t} vs B</div>`:''}</div>`).join('');
+}
+function clearTri(){TRI='';$('#trF').value='';renderTriage();renderSummary();renderContent();}
+
+function renderTabs(){
+  const buckets=getOpportunities();
+  const oppCount=Object.values(buckets).reduce((s,arr)=>s+arr.length,0);
+  const ts=[{k:'campaigns',l:'Campaigns'},{k:'opportunities',l:'Opportunities',badge:oppCount},{k:'bleeders',l:'Search Term Bleeders',badge:D.bl_camps.length},{k:'actions',l:'Action Tracker',badge:ACTIONS.length||null}];
+  $('#tabs').innerHTML=ts.map(t=>`<div class="tab ${TAB===t.k?'active':''}" onclick="setTab('${t.k}')">${t.l}${t.badge?`<span class="badge">${t.badge}</span>`:''}</div>`).join('');
+}
+function setTab(k){TAB=k;renderTabs();renderContent();}
+
+function getFiltered(){
+  let c=D._computed;const q=$('#search').value.toLowerCase();const pf=$('#pfF').value;const tr=TRI||$('#trF').value;
+  if(q)c=c.filter(x=>x.n.toLowerCase().includes(q)||x.p.toLowerCase().includes(q));
+  if(pf)c=c.filter(x=>x.p===pf);if(tr)c=c.filter(x=>x.t===tr);
+  // Sort
+  const sf=$('#sortF').value;const[sk,sd]=sf.split('_');
+  c=[...c].sort((a,b)=>{let va=a.m[sk==='acos'?'acos':sk==='roas'?'roas':sk==='orders'?'orders':sk==='sales'?'sales':'spend'];let vb=b.m[sk==='acos'?'acos':sk==='roas'?'roas':sk==='orders'?'orders':sk==='sales'?'sales':'spend'];if(sk==='acos'){va=va>=999?1e9:va;vb=vb>=999?1e9:vb;}return sd==='asc'?va-vb:vb-va;});
+  return c;
+}
+
+function renderContent(){
+  if(TAB==='campaigns')renderCampaigns();
+  else if(TAB==='opportunities')renderOpps();
+  else if(TAB==='bleeders')renderBleeders();
+  else if(TAB==='actions')renderActions();
+}
+
+function renderCampaigns(){
+  const camps=getFiltered();
+  const triNames={cr:'Critical',wa:'Watch',st:'Steady',wi:'Winner',sa:'Star',in:'—'};
+  const hasCmp=CMP&&PB;
+  let h=`<div class="sc"><div class="sh"><div class="st">${camps.length} Campaigns · ${PA.s} to ${PA.e}${hasCmp?' vs '+PB.s+' to '+PB.e:''}</div></div><div class="tw"><table><thead><tr>
+  <th style="text-align:left">Campaign</th><th style="text-align:left">Portfolio</th><th style="text-align:left">Status</th>
+  <th>Imp</th><th>Clicks</th><th>Spend${hasCmp?'<br><small style="color:var(--or)">Δ</small>':''}</th><th>Orders</th><th>Sales${hasCmp?'<br><small style="color:var(--or)">Δ</small>':''}</th><th>ACOS</th><th>ROAS${hasCmp?'<br><small style="color:var(--or)">Δ</small>':''}</th><th>CPC</th><th>CTR</th><th>CVR</th>
+  </tr></thead><tbody>`;
+  
+  camps.slice(0,250).forEach(c=>{
+    const m=c.m;const cm=c.cmp;
+    h+=`<tr onclick="openCamp('${c.n.replace(/'/g,"\\'")}')">
+    <td title="${c.n}">${c.n.length>42?c.n.substring(0,42)+'…':c.n}</td>
+    <td style="color:var(--t3)">${c.p}</td>
+    <td><span class="dot dot-${c.t}"></span>${triNames[c.t]||'—'}</td>
+    <td>${F.n(m.imp)}</td><td>${F.n(m.clicks)}</td>
+    <td>${F.d(m.spend)}${cm?`<span class="delta ${cm.d_spend.c}">${cm.d_spend.t}</span>`:''}</td>
+    <td>${m.orders}</td>
+    <td>${F.d(m.sales)}${cm?`<span class="delta ${cm.d_sales.c}">${cm.d_sales.t}</span>`:''}</td>
+    <td class="${F.ac(m.acos)}">${F.p(m.acos)}</td>
+    <td class="${F.rc(m.roas)}">${F.r(m.roas)}${cm?`<span class="delta ${cm.d_roas.c}">${cm.d_roas.t}</span>`:''}</td>
+    <td>${F.d(m.cpc)}</td><td>${m.ctr.toFixed(2)}%</td><td>${F.p(m.cvr)}</td></tr>`;
+  });
+  h+=`</tbody></table></div></div>`;
+  if(camps.length>250)h+=`<p style="text-align:center;color:var(--t3);font:500 11px var(--mo);padding:8px">Showing 250 of ${camps.length}. Use filters.</p>`;
+  $('#content').innerHTML=h;
+}
+
+// Opportunities — collect ALL actions per campaign, then bucket. Campaigns with 2+ go to "multi", others go to their single category.
+let OPP_FILT='';
+
+function getOpportunities(){
+  // First, collect all action types per campaign with messages
+  const byCamp={}; // cn -> {camp,actions:[{tp,msg,im}]}
+  D._computed.forEach(c=>{
+    const m=c.m;
+    const acts=[];
+    // SCALE — high ROAS but low spend, room to grow
+    if(m.roas>=4&&m.spend<800&&m.orders>3)acts.push({tp:'scale',msg:`ROAS ${m.roas}x but only ${F.d(m.spend)} spend. Increase budget.`,im:'hi'});
+    // BIDS — low ACOS, room to bid up
+    if(m.roas>=5&&m.acos<15&&m.clicks>10)acts.push({tp:'bids',msg:`ACOS only ${F.p(m.acos)} — bid up for more impressions.`,im:'md'});
+    // FIX or PAUSE — clicks but no orders
+    if(m.spend>30&&m.orders===0&&m.clicks>15)acts.push({tp:'fix',msg:`${m.clicks} clicks, 0 orders, ${F.d(m.spend)} wasted. Audit listing, price, targeting.`,im:'hi'});
+    // ASIN cleanup
+    const blAsins=(c.asins||[]).filter(a=>a.s>15&&a.o===0);
+    if(blAsins.length>=2)acts.push({tp:'asin',msg:`${blAsins.length} ASINs with $0 sales wasting ${F.d(blAsins.reduce((s,a)=>s+a.s,0))}. Remove/replace.`,im:'hi'});
+    // DECLINE — comparison-based
+    if(c.cmp&&c.cmp.m.roas>=3.5&&m.roas<2)acts.push({tp:'decline',msg:`ROAS dropped ${c.cmp.m.roas}x → ${m.roas}x vs Period B. Check CPC, competition, listing.`,im:'hi'});
+    if(acts.length)byCamp[c.n]={camp:c,actions:acts};
+  });
+  // Bucket: 2+ actions → multi; 1 action → its type
+  const buckets={scale:[],bids:[],fix:[],asin:[],decline:[],multi:[]};
+  Object.values(byCamp).forEach(({camp,actions})=>{
+    if(actions.length>=2){buckets.multi.push({cn:camp.n,camp,actions});}
+    else{const a=actions[0];buckets[a.tp].push({cn:camp.n,camp,actions:[a],msg:a.msg,im:a.im});}
+  });
+  // Sort each bucket by spend desc (multi sorted by spend too)
+  for(const k in buckets){buckets[k].sort((a,b)=>b.camp.m.spend-a.camp.m.spend);}
+  return buckets;
+}
+
+function renderOpps(){
+  const buckets=getOpportunities();
+  const meta={
+    scale:{i:'📈',l:'Scale Budget',d:'High ROAS, room to spend more'},
+    bids:{i:'🎯',l:'Increase Bids',d:'Low ACOS — capture more traffic'},
+    fix:{i:'🔧',l:'Fix or Pause',d:'Spending without converting'},
+    asin:{i:'🗑️',l:'Remove ASINs',d:'Bleeding child ASINs detected'},
+    decline:{i:'📉',l:'Declining Trend',d:'ROAS dropped vs comparison'},
+    multi:{i:'⚡',l:'Multi-Action',d:'Needs 2+ optimizations'}
+  };
+  const order=['multi','scale','bids','fix','asin','decline'];
+  const totalCount=order.reduce((s,k)=>s+buckets[k].length,0);
+
+  // Pills row (always visible)
+  let h=`<div class="opp-filt">`;
+  order.forEach(k=>{
+    const m=meta[k],n=buckets[k].length;
+    h+=`<div class="opp-pl t-${k} ${OPP_FILT===k?'active':''}" onclick="setOppFilt('${k}')">
+      <div class="pl-i">${m.i}</div>
+      <div class="pl-l">${m.l}</div>
+      <div class="pl-c">${n}</div>
+      <div class="pl-s">${m.d}</div>
+    </div>`;
+  });
+  h+=`</div>`;
+
+  if(!totalCount){h+=`<p style="text-align:center;padding:40px;color:var(--t3);font:500 12px var(--mo)">No opportunities for this period.</p>`;$('#content').innerHTML=h;return;}
+
+  // If no filter selected, show prompt + summary
+  if(!OPP_FILT){
+    h+=`<div class="sc" style="text-align:center;padding:32px"><div style="font:600 13px/1.6 var(--sa);color:var(--t2)">${totalCount} campaigns flagged across ${order.filter(k=>buckets[k].length).length} action categories.<br><span style="color:var(--t3);font-size:12px">Click a category above to drill in.</span></div></div>`;
+    $('#content').innerHTML=h;return;
+  }
+
+  // Show filtered list
+  const items=buckets[OPP_FILT];const m=meta[OPP_FILT];
+  h+=`<div class="sc"><div class="sh"><div class="st">${m.i} ${m.l} — ${items.length} campaigns</div><button class="act-btn" onclick="setOppFilt('')">← Back to all</button></div>`;
+  if(!items.length){h+=`<p style="color:var(--t3);font:500 12px var(--mo);padding:20px;text-align:center">No campaigns in this category for the selected period.</p>`;}
+  else{
+    items.slice(0,80).forEach(o=>{
+      const c=o.camp,cm=c.m;
+      if(OPP_FILT==='multi'){
+        const badges=o.actions.map(a=>`<span class="ma-bdg ${a.tp}">${meta[a.tp].i} ${meta[a.tp].l}</span>`).join('');
+        const msgs=o.actions.map(a=>`<div style="font:400 11.5px/1.5 var(--sa);color:var(--t2);padding:3px 0">${meta[a.tp].i} ${a.msg}</div>`).join('');
+        h+=`<div class="opp" onclick="openCamp('${c.n.replace(/'/g,"\\'")}')">
+          <div class="opp-h">
+            <div class="opp-i">${m.i}</div>
+            <div style="flex:1;min-width:0">
+              <div class="opp-cn">${c.n}</div>
+              <div style="margin:5px 0 6px">${badges}</div>
+              ${msgs}
+              <div style="margin-top:6px;font:500 10px var(--mo);color:var(--t3)">${c.p} · ${F.d(cm.spend)} spend · ${F.r(cm.roas)} ROAS · ${F.p(cm.acos)} ACOS</div>
+            </div>
+          </div>
+        </div>`;
+      } else {
+        h+=`<div class="opp" onclick="openCamp('${c.n.replace(/'/g,"\\'")}')">
+          <div class="opp-h">
+            <div class="opp-i">${m.i}</div>
+            <div style="flex:1;min-width:0">
+              <div class="opp-cn">${c.n}</div>
+              <div class="opp-m">${o.msg}</div>
+              <div style="margin-top:5px;font:500 10px var(--mo);color:var(--t3)">${c.p} · ${F.d(cm.spend)} spend · ${F.r(cm.roas)} ROAS</div>
+              <span class="opp-t ${o.im}" style="margin-top:6px">${o.im} impact</span>
+            </div>
+          </div>
+        </div>`;
+      }
+    });
+    if(items.length>80)h+=`<p style="text-align:center;color:var(--t3);font:500 11px var(--mo);padding:10px">Showing top 80 of ${items.length} (sorted by spend)</p>`;
+  }
+  h+=`</div>`;
+  $('#content').innerHTML=h;
+}
+function setOppFilt(k){OPP_FILT=OPP_FILT===k?'':k;renderOpps();}
+
+function renderBleeders(){
+  const bl=D.bl_camps,terms=D.bleeders;
+  const tW=terms.reduce((s,b)=>s+b.s,0),tN=bl.reduce((s,b)=>s+b.n,0);
+  let h=`<div class="bls"><div class="bl"><div class="bll">Wasted Spend</div><div class="blv">${F.m(tW)}</div><div class="bld">on 0-order search terms</div></div><div class="bl"><div class="bll">Bleeding Campaigns</div><div class="blv">${bl.length}</div></div><div class="bl"><div class="bll">Terms to Negate</div><div class="blv">${F.n(tN)}</div></div></div>`;
+  h+=`<div class="sc"><div class="sh"><div class="st">Top Bleeding Campaigns</div></div><div class="tw"><table><thead><tr><th style="text-align:left">Campaign</th><th>Bleeding Terms</th><th>Wasted</th></tr></thead><tbody>`;
+  bl.slice(0,50).forEach(b=>{h+=`<tr><td>${b.cn}</td><td>${b.n}</td><td class="dn">${F.d(b.s)}</td></tr>`;});
+  h+=`</tbody></table></div></div>`;
+  h+=`<div class="sc"><div class="sh"><div class="st">Top Bleeding Search Terms</div></div><div class="tw"><table><thead><tr><th style="text-align:left">Search Term</th><th style="text-align:left">Campaign</th><th>Type</th><th>Clicks</th><th>Wasted</th></tr></thead><tbody>`;
+  terms.slice(0,100).forEach(t=>{h+=`<tr><td>${t.st}</td><td style="color:var(--t3);max-width:200px;overflow:hidden;text-overflow:ellipsis">${t.cn}</td><td>${t.tp}</td><td>${t.c}</td><td class="dn">${F.d(t.s)}</td></tr>`;});
+  h+=`</tbody></table></div></div>`;
+  $('#content').innerHTML=h;
+}
+
+function renderActions(){
+  let h=`<div class="sc"><div class="sh"><div class="st">Action Tracker — ${ACTIONS.length} Actions Logged</div><button class="act-btn" onclick="addAction()">+ Log Action</button></div>`;
+  if(!ACTIONS.length){h+=`<p style="color:var(--t3);font:500 12px var(--mo);padding:20px;text-align:center">No actions logged yet. Open any campaign and click "Log Action" to start tracking.</p>`;}
+  else{
+    h+=`<div class="tw"><table><thead><tr><th style="text-align:left">Date</th><th style="text-align:left">Campaign</th><th style="text-align:left">Action</th><th>Before Spend</th><th>Before ROAS</th><th>Before ACOS</th><th>After Spend</th><th>After ROAS</th><th>After ACOS</th><th>Δ ROAS</th><th></th></tr></thead><tbody>`;
+    ACTIONS.forEach((a,i)=>{
+      // Auto-compute "after" from current data
+      const camp=D._computed.find(c=>c.n===a.campaign);
+      const after=camp?camp.m:null;
+      const roasDelta=after&&a.before_roas?F.dl(after.roas,a.before_roas):{t:'—',c:''};
+      h+=`<tr><td style="text-align:left">${a.date}</td><td style="text-align:left;color:var(--tw)">${a.campaign.substring(0,35)}</td><td style="text-align:left">${a.action}</td>
+      <td>${F.d(a.before_spend)}</td><td>${F.r(a.before_roas)}</td><td>${F.p(a.before_acos)}</td>
+      <td>${after?F.d(after.spend):'—'}</td><td class="${after?F.rc(after.roas):''}">${after?F.r(after.roas):'—'}</td><td class="${after?F.ac(after.acos):''}">${after?F.p(after.acos):'—'}</td>
+      <td class="${roasDelta.c}">${roasDelta.t}</td>
+      <td><button class="act-btn del" onclick="delAction(${i})">✕</button></td></tr>`;
+    });
+    h+=`</tbody></table></div>`;
+  }
+  h+=`</div>`;$('#content').innerHTML=h;
+}
+
+function logAction(campName,actionType){
+  const camp=D._computed.find(c=>c.n===campName);if(!camp)return;
+  ACTIONS.unshift({date:new Date().toISOString().split('T')[0],campaign:campName,action:actionType,before_spend:camp.m.spend,before_roas:camp.m.roas,before_acos:camp.m.acos,before_orders:camp.m.orders});
+  localStorage.setItem('cc_actions',JSON.stringify(ACTIONS));
+  renderTabs();
+}
+function delAction(i){ACTIONS.splice(i,1);localStorage.setItem('cc_actions',JSON.stringify(ACTIONS));renderActions();renderTabs();}
+function addAction(){
+  const cn=prompt('Campaign name (paste exact):');if(!cn)return;
+  const act=prompt('Action taken (e.g., Bid -20%, Paused, Negated terms):');if(!act)return;
+  logAction(cn,act);if(TAB==='actions')renderActions();
+}
+
+function openCamp(name){
+  const c=D._computed.find(x=>x.n===name);if(!c)return;
+  const m=c.m;const bg=$('#mbg');bg.classList.add('show');
+  const triNames={cr:'🔴 Critical',wa:'🟠 Watch',st:'🟡 Steady',wi:'🟢 Winner',sa:'⭐ Star',in:'⚫ Inactive'};
+
+  let h=`<h2>${c.n}</h2><div class="ms">${c.p} · ${triNames[c.t]} · ${c.reason}</div>`;
+
+  // Metrics cards
+  h+=`<div class="mg">`;
+  [{l:'Impressions',v:F.n(m.imp)},{l:'Clicks',v:F.n(m.clicks)},{l:'Spend',v:F.d(m.spend)},{l:'Orders',v:m.orders},{l:'Sales',v:F.d(m.sales)},{l:'ACOS',v:F.p(m.acos),c:F.ac(m.acos)},{l:'ROAS',v:F.r(m.roas),c:F.rc(m.roas)}].forEach(i=>{
+    let delta='';
+    if(c.cmp){const bm=c.cmp.m;const key=i.l.toLowerCase();
+      if(key==='spend')delta=`<div class="md ${c.cmp.d_spend.c}">${c.cmp.d_spend.t}</div>`;
+      else if(key==='sales')delta=`<div class="md ${c.cmp.d_sales.c}">${c.cmp.d_sales.t}</div>`;
+      else if(key==='roas')delta=`<div class="md ${c.cmp.d_roas.c}">${c.cmp.d_roas.t}</div>`;
+    }
+    h+=`<div class="mc"><div class="ml">${i.l}</div><div class="mv ${i.c||''}">${i.v}</div>${delta}</div>`;
+  });
+  h+=`</div>`;
+
+  // Comparison table if enabled
+  if(c.cmp){
+    const bm=c.cmp.m;
+    h+=`<div class="sc" style="background:var(--cd2);border-color:var(--or)"><div class="sh"><div class="st" style="color:var(--or)">Period Comparison</div></div><div class="tw"><table><thead><tr><th style="text-align:left">Period</th><th>Imp</th><th>Clicks</th><th>Spend</th><th>Orders</th><th>Sales</th><th>ACOS</th><th>ROAS</th></tr></thead><tbody>
+    <tr><td style="text-align:left;color:var(--cy)">A: ${PA.s} → ${PA.e}</td><td>${F.n(m.imp)}</td><td>${F.n(m.clicks)}</td><td>${F.d(m.spend)}</td><td>${m.orders}</td><td>${F.d(m.sales)}</td><td class="${F.ac(m.acos)}">${F.p(m.acos)}</td><td class="${F.rc(m.roas)}">${F.r(m.roas)}</td></tr>
+    <tr><td style="text-align:left;color:var(--or)">B: ${PB.s} → ${PB.e}</td><td>${F.n(bm.imp)}</td><td>${F.n(bm.clicks)}</td><td>${F.d(bm.spend)}</td><td>${bm.orders}</td><td>${F.d(bm.sales)}</td><td class="${F.ac(bm.acos)}">${F.p(bm.acos)}</td><td class="${F.rc(bm.roas)}">${F.r(bm.roas)}</td></tr>
+    <tr style="border-top:2px solid var(--or)"><td style="text-align:left;font-weight:700;color:var(--tw)">Δ Change</td><td class="${F.dl(m.imp,bm.imp).c}">${F.dl(m.imp,bm.imp).t}</td><td class="${F.dl(m.clicks,bm.clicks).c}">${F.dl(m.clicks,bm.clicks).t}</td><td class="${c.cmp.d_spend.c}">${c.cmp.d_spend.t}</td><td class="${F.dl(m.orders,bm.orders).c}">${F.dl(m.orders,bm.orders).t}</td><td class="${c.cmp.d_sales.c}">${c.cmp.d_sales.t}</td><td class="${F.dl(m.acos>=999?0:m.acos,bm.acos>=999?0:bm.acos).c}">${F.dl(m.acos>=999?0:m.acos,bm.acos>=999?0:bm.acos).t}</td><td class="${c.cmp.d_roas.c}">${c.cmp.d_roas.t}</td></tr>
+    </tbody></table></div></div>`;
+  }
+
+  // ASINs
+  if(c.asins&&c.asins.length){
+    h+=`<div class="sc" style="background:var(--cd2)"><div class="sh"><div class="st">Top ASINs</div></div><div class="tw"><table><thead><tr><th style="text-align:left">ASIN</th><th>Imp</th><th>Clicks</th><th>Spend</th><th>Orders</th><th>Sales</th><th>ACOS</th><th>ROAS</th></tr></thead><tbody>`;
+    c.asins.forEach(a=>{h+=`<tr><td><a href="https://amazon.com/dp/${a.a}" target="_blank" style="color:var(--bl);text-decoration:none">${a.a}</a></td><td>${F.n(a.i)}</td><td>${F.n(a.c)}</td><td>${F.d(a.s)}</td><td>${a.o}</td><td>${F.d(a.r)}</td><td class="${F.ac(a.acos)}">${F.p(a.acos)}</td><td class="${F.rc(a.roas)}">${F.r(a.roas)}</td></tr>`;});
+    h+=`</tbody></table></div></div>`;
+  }
+
+  // Targets
+  if(c.targets&&c.targets.length){
+    h+=`<div class="sc" style="background:var(--cd2)"><div class="sh"><div class="st">Top Targeting / Ad Groups</div></div><div class="tw"><table><thead><tr><th style="text-align:left">Ad Group</th><th style="text-align:left">ASIN</th><th>Imp</th><th>Clicks</th><th>Spend</th><th>Orders</th><th>Sales</th></tr></thead><tbody>`;
+    c.targets.forEach(t=>{h+=`<tr><td>${t.ag}</td><td style="color:var(--bl)">${t.asin}</td><td>${F.n(t.i)}</td><td>${F.n(t.c)}</td><td>${F.d(t.s)}</td><td>${t.o}</td><td>${F.d(t.r)}</td></tr>`;});
+    h+=`</tbody></table></div></div>`;
+  }
+
+  // Recommended actions + Log button
+  h+=`<div class="sc" style="background:var(--cd2)"><div class="sh"><div class="st">Recommended Actions</div></div>`;
+  const acts=getActions(c);
+  acts.forEach(a=>{h+=`<div style="padding:7px 0;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center"><span style="font:400 12px/1.5 var(--sa);color:var(--t2)"><span style="color:${a.co};font-weight:700;margin-right:6px">${a.i}</span>${a.t}</span><button class="act-btn" onclick="logAction('${c.n.replace(/'/g,"\\'")}','${a.i} ${a.t.substring(0,30).replace(/'/g,"")}')" style="flex-shrink:0;margin-left:10px">Log Action</button></div>`;});
+  h+=`</div>`;
+
+  $('#mc').innerHTML=h;
+}
+
+function getActions(c){
+  const m=c.m;const a=[];
+  if(c.t==='cr'){
+    if(m.orders===0&&m.spend>30)a.push({i:'⏸',t:`PAUSE — ${F.d(m.spend)} spent with 0 orders. Audit targeting before re-enabling.`,co:'var(--rd)'});
+    if(m.acos>60&&m.acos<999)a.push({i:'📉',t:`Reduce bids 30-40%. ACOS ${F.p(m.acos)} is extreme.`,co:'var(--rd)'});
+    if(m.clicks>15&&m.orders===0)a.push({i:'🔍',t:`${m.clicks} clicks, 0 orders. Check: listing quality, price, search term relevance.`,co:'var(--or)'});
+  }
+  if(c.t==='wa'){
+    if(m.acos>35&&m.acos<999)a.push({i:'🎯',t:`Reduce bids 15-20% to bring ACOS from ${F.p(m.acos)} toward 24%.`,co:'var(--or)'});
+    if(m.ctr<0.2&&m.imp>3000)a.push({i:'🖼',t:`CTR ${m.ctr.toFixed(2)}% — test new main image or refine targeting.`,co:'var(--or)'});
+    if(m.cvr<5&&m.clicks>20)a.push({i:'📄',t:`CVR ${F.p(m.cvr)} — check listing, reviews, price.`,co:'var(--or)'});
+  }
+  if(c.t==='wi'||c.t==='sa'){
+    a.push({i:'💰',t:`${F.r(m.roas)} ROAS. Increase budget 20% to capture more revenue.`,co:'var(--gn)'});
+    if(m.acos<15)a.push({i:'📈',t:`ACOS ${F.p(m.acos)} — increase bids for more top-of-search.`,co:'var(--gn)'});
+  }
+  if(c.t==='st')a.push({i:'🔄',t:`ROAS ${F.r(m.roas)} — harvest converting terms to exact, negate bleeders.`,co:'var(--yl)'});
+  if(!a.length)a.push({i:'👁',t:'Monitor. No immediate action needed.',co:'var(--t3)'});
+  return a;
+}
+
+$('#mcl').onclick=()=>$('#mbg').classList.remove('show');
+$('#mbg').onclick=e=>{if(e.target===$('#mbg'))$('#mbg').classList.remove('show');};
+$('#calBg').onclick=e=>{if(e.target===$('#calBg'))closeCal();};
+$('#search').addEventListener('input',renderContent);
+$('#pfF').addEventListener('change',renderContent);
+$('#trF').addEventListener('change',()=>{TRI=$('#trF').value;renderTriage();renderSummary();renderContent();});
+$('#sortF').addEventListener('change',renderContent);
+init();
+</script>
+</body>
+</html>
