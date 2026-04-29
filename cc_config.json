@@ -1,0 +1,194 @@
+{
+  "schema_version": 1,
+  "_comment": "All tunable thresholds for Command Center. Edit values here without touching code. Reload the page to apply.",
+
+  "owners": {
+    "_comment": "Auto-route action ownership by portfolio name suffix. Format: '<suffix>': '<owner name>'. Portfolios not matching → blank.",
+    "RJ": "Rashmi Jain",
+    "SG": "Suryansh Gautam",
+    "AB": "Ayush Bhaskar",
+    "DS": "Diwanshu Singh"
+  },
+  "harvest_owner": "Rashmi Jain",
+
+  "portfolio_budgets": {
+    "_comment": "Approximate monthly portfolio budgets in USD. Used for budget reallocation slack calc.",
+    "RJ": 75000,
+    "SG": 65000,
+    "AB": 75000,
+    "DS": 90000
+  },
+
+  "verdict_windows": {
+    "_comment": "Days post-action to compute verdicts. Sun-Sat aligned.",
+    "early": 7,
+    "mid": 14,
+    "final": 30
+  },
+
+  "confidence_thresholds": {
+    "_comment": "Confidence flag based on after-window orders + spend.",
+    "low_max_orders": 5,
+    "med_max_orders": 20,
+    "high_min_spend_usd": 300
+  },
+
+  "rubrics": {
+    "_comment": "Per-action-type success criteria. Multi-action bundles use the 'combo' rubric. All percentages are signed (positive = increase).",
+
+    "bid_increase": {
+      "worked":      { "orders_pct_min": 1,    "roas_delta_min": -0.5 },
+      "didnt":       { "orders_pct_max": 0,    "roas_delta_max": -0.5 },
+      "scaled_costly": null
+    },
+    "bid_decrease": {
+      "worked":      { "roas_delta_min": 0.1,  "orders_pct_min": -20 },
+      "didnt":       { "roas_delta_max": 0,    "orders_pct_max": -25 }
+    },
+    "budget_increase": {
+      "worked":      { "spend_deploy_pct_min": 80, "roas_delta_min": -0.3 },
+      "didnt":       { "spend_deploy_pct_max": 50, "roas_delta_max": -0.5 }
+    },
+    "budget_decrease": {
+      "worked":      { "roas_delta_min": 0,    "orders_pct_min": -15 },
+      "didnt":       { "orders_pct_max": -25 }
+    },
+    "pause": {
+      "worked":      { "portfolio_orders_pct_min": -10 },
+      "didnt":       { "portfolio_orders_pct_max": -15 }
+    },
+    "asin_remove": {
+      "worked":      { "portfolio_roas_delta_min": 0,  "portfolio_orders_pct_min": -5 },
+      "didnt":       { "portfolio_orders_pct_max": -10 }
+    },
+    "asin_add": {
+      "worked":      { "orders_min_per_added_asin": 1, "acos_max_pct": 50 },
+      "didnt":       { "orders_total": 0, "spend_min_usd": 30 }
+    },
+    "negative_add": {
+      "worked":      { "wasted_spend_pct_min": -10, "total_clicks_pct_min": -20 },
+      "didnt":       { "total_clicks_pct_max": -20 }
+    },
+    "keyword_add": {
+      "worked":      { "orders_min": 1, "acos_max_pct": 40 },
+      "didnt":       { "orders_total": 0, "spend_min_usd": 50 }
+    },
+    "bidding_strategy_roas": {
+      "worked":      { "roas_delta_min": 0.1,  "min_window_days": 14 },
+      "didnt":       { "roas_delta_max": -0.3 }
+    },
+    "bidding_strategy_dynamic_up_down": {
+      "worked":      { "orders_pct_min": 5,   "roas_delta_min": -0.3 },
+      "didnt":       { "spend_pct_max": 25,   "orders_pct_max": 0 }
+    },
+    "bidding_strategy_dynamic_down": {
+      "worked":      { "roas_delta_min": 0.2, "orders_pct_min": -15 }
+    },
+    "placement_bid": {
+      "worked":      { "sales_pct_min": 10,   "roas_delta_min": -0.3 },
+      "didnt":       { "spend_pct_max": 25,   "sales_pct_max": 0 }
+    },
+    "target_bid": {
+      "worked":      { "orders_pct_min": 5,   "roas_delta_min": -0.3 }
+    },
+    "audience_bid": {
+      "worked":      { "orders_pct_min": 5,   "roas_delta_min": -0.3 }
+    },
+
+    "_combo_comment": "When 2+ actions logged together, the combo rubric overrides individual ones. This protects against misreading legitimate scaling tradeoffs as failures.",
+    "combo_bid_budget": {
+      "worked":             { "sales_pct_min": 15, "roas_pct_min": -15 },
+      "scaled_but_costly":  { "orders_pct_min": 25, "roas_pct_min": -60, "roas_pct_max": -30 },
+      "didnt":              { "sales_pct_max": 5,  "roas_pct_max": -40 }
+    },
+    "combo_default": {
+      "_comment": "Used for any multi-action bundle not explicitly defined above.",
+      "worked":             { "sales_pct_min": 10, "roas_pct_min": -25 },
+      "scaled_but_costly":  { "orders_pct_min": 25, "roas_pct_max": -30 },
+      "didnt":              { "sales_pct_max": 0,  "roas_pct_max": -40 }
+    }
+  },
+
+  "diagnostic": {
+    "_comment": "Used by Diagnostic Engine (Batch B). Significance threshold for triggering driver decomposition.",
+    "min_roas_change_pct": 15,
+    "min_period_spend_usd": 50
+  },
+
+  "harvest": {
+    "_comment": "Search term harvester thresholds. Account-or-campaign level (not portfolio target).",
+    "min_orders_30d": 3,
+    "max_acos_pct": 30,
+    "min_clicks_30d": 5
+  },
+
+  "reallocate": {
+    "_comment": "Budget reallocation engine. Conservative defaults — max 10% portfolio shift per week.",
+    "max_shift_pct_per_week": 10,
+    "min_winner_roas": 4,
+    "max_underperformer_roas": 1.5,
+    "min_action_amount_usd": 50
+  },
+
+  "briefing": {
+    "_comment": "Weekly Briefing generator. SC only, Mon delivery, Sun-Sat reporting period.",
+    "channel": "SC",
+    "period_days": 7,
+    "stakeholders_to": ["Lesa Musatto", "James Buell", "Edouard Segain"],
+    "stakeholders_cc": ["Vandana Makharia", "Sonali Daga", "Rashmi Jain", "Suryansh Gautam", "Diwanshu Singh", "Matthew Lewis"],
+    "voice_report_pct": 60,
+    "voice_passive_pct": 40,
+    "max_wins": 3,
+    "max_alerts": 3,
+    "max_actions_listed": 8
+  },
+
+  "calibration_actions": {
+    "_comment": "Real Mar 5 + Mar 11 actions logged by Suryansh on Security Signs portfolio. Pre-loaded for verdict engine validation. Format: { date, owner, action_types[], campaigns[], notes }",
+    "entries": [
+      {
+        "id": "calib_mar11_combo",
+        "date": "2026-03-11",
+        "owner": "Suryansh Gautam",
+        "portfolio_hint": "Security - SG",
+        "action_types": ["bid_increase", "target_bid", "placement_bid", "budget_increase"],
+        "campaigns": [
+          "Emergency Exit Only Security Alarm - Product Targeting",
+          "Security - NoTrespassing - Violators Will Be Prosecuted - SAT - FBA  + High ROAS",
+          "Security - NoSoliciting - Private Property Sign for Yard No Soliciting Loitering - SAT - FBA  + High ROAS",
+          "Security Notice No Photos Video Allowed - Sponsored",
+          "Security - VideoSurveillance - Notice All Activities Monitored By Video Camera Sign - SAT - FBA  + High ROAS"
+        ],
+        "notes": "SG Security Signs - bid+budget combo on top performers (last 30d good ROAS)"
+      },
+      {
+        "id": "calib_mar11_budget_only",
+        "date": "2026-03-11",
+        "owner": "Suryansh Gautam",
+        "portfolio_hint": "Security - SG",
+        "action_types": ["budget_increase"],
+        "campaigns": [
+          "Security - NoSoliciting - No Soliciting Lawn Sign - SPM - FBA  + High ROAS"
+        ],
+        "notes": "Budget-only test — increased to 45 from 21"
+      },
+      {
+        "id": "calib_mar5_sd_targeting",
+        "date": "2026-03-05",
+        "owner": "Suryansh Gautam",
+        "portfolio_hint": "SD",
+        "action_types": ["asin_add", "keyword_add"],
+        "campaigns": [
+          "Caution Blank Write-On Folding Floor Sign - SD - FBA - Conversions",
+          "Emergency Eyewash Station Sign - SD - FBA - Conversions",
+          "Parking Permit Window Cling Repositionable Labels - SD - FBA - Conversions",
+          "Caution - Floor Slippery When Wet Sign - SD - FBA - Conversions",
+          "2-Part Hot Work Permit Tag - SD - FBA - Conversions",
+          "Maintenance Door Hanger Tags - SD - FBA - Conversions",
+          "Notice - Elevator Out Of Order Folding Floor Sign  - SD - FBA - Conversions"
+        ],
+        "notes": "Added category targets + individual ASIN targets to SD conversion campaigns"
+      }
+    ]
+  }
+}
