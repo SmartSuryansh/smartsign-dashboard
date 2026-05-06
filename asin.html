@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartSign — ASIN Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#080c14;--cd:#0f1629;--cd2:#131b30;--hv:#1a2440;--sf:#0a0f1c;--bd:#1c2844;--bd2:#2a3a5c;--t1:#eef2ff;--t2:#b0bfe0;--t3:#6b7fa3;--tw:#fff;--cy:#00e5c8;--or:#ff9f43;--rd:#ff5b5b;--gn:#2ecc71;--pu:#a78bfa;--yl:#f1c40f;--bl:#60a5fa;--mo:'JetBrains Mono',monospace;--sa:'DM Sans',sans-serif;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--t1);font-family:var(--sa);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 30%,rgba(167,139,250,.05),transparent 60%),radial-gradient(ellipse at 80% 70%,rgba(0,229,200,.04),transparent 60%);pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.025'/%3E%3C/svg%3E");pointer-events:none;z-index:0;}
+.w{max-width:1500px;margin:0 auto;padding:24px 28px;position:relative;z-index:1;}
+
+/* HEADER */
+.hdr{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;padding-bottom:18px;border-bottom:1px solid var(--bd);}
+.hdr-l .cr{font:600 10px/1 var(--mo);letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:10px;}
+.hdr-l .cr a{color:var(--cy);text-decoration:none;}.hdr-l .cr a:hover{text-decoration:underline;}
+.hdr-l h1{font:800 32px/1.1 var(--mo);background:linear-gradient(135deg,var(--pu),var(--cy));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hdr-l .sub{font:500 12px/1 var(--mo);color:var(--t3);margin-top:6px;}
+.hdr-r{font:500 11px/1.4 var(--mo);color:var(--t3);text-align:right;}
+.hdr-r b{color:var(--cy);font-weight:700;}
+
+/* HERO */
+.hero{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px;}
+.hc{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:20px 18px;position:relative;overflow:hidden;transition:all .25s;}
+.hc:hover{border-color:var(--cy);transform:translateY(-2px);}
+.hc::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:14px 0 0 14px;}
+.hc.c1::before{background:var(--cy);}.hc.c2::before{background:var(--gn);}.hc.c3::before{background:var(--rd);}.hc.c4::before{background:var(--or);}.hc.c5::before{background:var(--pu);}
+.hc .lb{font:600 9px/1 var(--mo);letter-spacing:1.6px;text-transform:uppercase;color:var(--t3);margin-bottom:9px;}
+.hc .vl{font:800 26px/1 var(--mo);color:var(--tw);}
+.hc .dt{font:500 11px/1.4 var(--mo);color:var(--t2);margin-top:7px;}
+.up{color:var(--gn)!important;}.dn{color:var(--rd)!important;}.wn{color:var(--or)!important;}.in{color:var(--cy)!important;}.pu{color:var(--pu)!important;}
+
+/* SECTION */
+.sc{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:22px;margin-bottom:22px;}
+.sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+.st{font:700 12px/1 var(--mo);letter-spacing:1.2px;text-transform:uppercase;color:var(--t2);display:flex;align-items:center;gap:10px;}
+.st .stb{font:500 10px/1 var(--mo);color:var(--t3);text-transform:none;letter-spacing:0;}
+
+/* CONSTELLATION */
+.const-wrap{position:relative;height:560px;background:linear-gradient(180deg,#050810 0%,#0a0f1c 100%);border-radius:12px;overflow:hidden;border:1px solid var(--bd);}
+#constCanvas{display:block;width:100%;height:100%;cursor:grab;}
+#constCanvas.dragging{cursor:grabbing;}
+.const-overlay{position:absolute;top:14px;left:14px;display:flex;flex-direction:column;gap:6px;pointer-events:none;}
+.const-axis{font:700 10px/1.3 var(--mo);letter-spacing:1px;text-transform:uppercase;color:var(--t2);background:rgba(15,22,41,.85);backdrop-filter:blur(6px);padding:6px 10px;border-radius:6px;border:1px solid var(--bd);pointer-events:auto;}
+.const-axis .ax{color:var(--cy);font-weight:800;display:inline-block;width:14px;}
+.const-axis .ax.y{color:var(--or);}.const-axis .ax.z{color:var(--pu);}
+.const-controls{position:absolute;top:14px;right:14px;display:flex;flex-direction:column;gap:6px;}
+.const-btn{font:600 10px/1 var(--mo);letter-spacing:1px;text-transform:uppercase;background:rgba(15,22,41,.85);backdrop-filter:blur(6px);color:var(--t2);border:1px solid var(--bd);padding:8px 12px;border-radius:6px;cursor:pointer;transition:all .15s;}
+.const-btn:hover{border-color:var(--cy);color:var(--cy);}
+.const-btn.active{background:rgba(0,229,200,.12);border-color:var(--cy);color:var(--cy);}
+.const-legend{position:absolute;bottom:14px;left:14px;background:rgba(15,22,41,.88);backdrop-filter:blur(6px);padding:10px 14px;border-radius:8px;border:1px solid var(--bd);display:flex;gap:18px;flex-wrap:wrap;}
+.const-leg-item{display:flex;align-items:center;gap:6px;font:500 10px/1 var(--mo);color:var(--t2);}
+.const-leg-dot{width:10px;height:10px;border-radius:50%;box-shadow:0 0 6px currentColor;}
+.const-info{position:absolute;bottom:14px;right:14px;background:rgba(15,22,41,.88);backdrop-filter:blur(6px);padding:10px 14px;border-radius:8px;border:1px solid var(--bd);font:500 10px/1.4 var(--mo);color:var(--t2);}
+.const-info b{color:var(--cy);font-weight:700;}
+.const-tooltip{position:absolute;background:#0c1224;border:1px solid var(--cy);border-radius:8px;padding:10px 12px;font:500 11px/1.4 var(--mo);color:var(--t1);pointer-events:none;display:none;max-width:280px;box-shadow:0 6px 20px rgba(0,0,0,.6);z-index:100;}
+.const-tooltip .tt-id{color:var(--cy);font-weight:700;margin-bottom:4px;}
+.const-tooltip .tt-t{color:var(--t2);font-size:10px;margin-bottom:6px;}
+.const-tooltip .tt-row{display:flex;justify-content:space-between;gap:14px;font-size:10px;}
+.const-tooltip .tt-row span:first-child{color:var(--t3);}
+
+/* YOYI MONTHLY GRID */
+.yoyi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.yc{background:var(--cd2);border:1px solid var(--bd);border-radius:12px;padding:18px;transition:all .2s;cursor:pointer;}
+.yc:hover{border-color:var(--or);transform:translateY(-2px);}
+.yc.active{border-color:var(--or);background:rgba(255,159,67,.06);}
+.yc .ym{font:700 13px/1 var(--mo);color:var(--or);margin-bottom:12px;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;}
+.yc .ym .ycn{font:800 22px/1 var(--mo);color:var(--tw);}
+.yc .yr{display:flex;justify-content:space-between;font:500 11px/1.3 var(--mo);padding:5px 0;border-bottom:1px dashed #1c284455;}
+.yc .yr:last-child{border-bottom:none;}
+.yc .yr .yl{color:var(--t3);}.yc .yr .yv{color:var(--t1);font-weight:600;}
+.yc .yr .yd{font-weight:700;font-size:10px;margin-left:6px;}
+.yc .yd-bd{font:500 9px/1.3 var(--mo);color:var(--t3);margin-top:10px;padding-top:10px;border-top:1px solid var(--bd);letter-spacing:.3px;}
+
+/* TOOLBAR */
+.tb{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:18px;}
+.tb-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.tb-row + .tb-row{margin-top:10px;padding-top:10px;border-top:1px dashed #1c284466;}
+.tb-search{flex:1;min-width:280px;background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:10px 14px;font:500 13px var(--mo);color:var(--t1);outline:none;transition:border-color .15s;}
+.tb-search:focus{border-color:var(--cy);}
+.tb-btn{font:600 11px/1 var(--mo);letter-spacing:1px;text-transform:uppercase;background:var(--sf);border:1px solid var(--bd);color:var(--t2);padding:10px 14px;border-radius:8px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+.tb-btn:hover{border-color:var(--cy);color:var(--cy);}
+.tb-btn.active{background:rgba(0,229,200,.1);border-color:var(--cy);color:var(--cy);}
+.tb-btn .bdg{background:var(--cy);color:#000;border-radius:4px;font:700 9px/1 var(--mo);padding:3px 5px;}
+.tb-toggle{display:flex;background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:3px;}
+.tb-toggle button{font:600 10px/1 var(--mo);letter-spacing:1px;text-transform:uppercase;background:none;border:none;color:var(--t3);padding:7px 12px;border-radius:6px;cursor:pointer;transition:all .15s;}
+.tb-toggle button.active{background:var(--cy);color:#000;}
+.tb-presets{display:flex;flex-wrap:wrap;gap:7px;}
+.tb-preset{font:600 10px/1 var(--mo);letter-spacing:.5px;background:transparent;border:1px solid var(--bd);color:var(--t2);padding:7px 10px;border-radius:6px;cursor:pointer;transition:all .15s;}
+.tb-preset:hover{border-color:var(--pu);color:var(--pu);}
+.tb-preset.active{background:rgba(167,139,250,.12);border-color:var(--pu);color:var(--pu);}
+.tb-status{font:500 11px/1.3 var(--mo);color:var(--t3);margin-left:auto;text-align:right;}
+.tb-status b{color:var(--cy);}
+
+/* TABLE */
+.tw{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-family:var(--mo);}
+thead th{padding:11px 10px;text-align:right;font:700 9px/1 var(--mo);text-transform:uppercase;letter-spacing:.8px;color:var(--t3);border-bottom:2px solid var(--bd2);white-space:nowrap;cursor:pointer;user-select:none;}
+thead th:first-child,thead th.lf{text-align:left;}
+thead th:hover{color:var(--cy);}
+thead th .sortarrow{color:var(--cy);margin-left:3px;font-size:8px;}
+tbody td{padding:9px 10px;text-align:right;font:500 11px/1.2 var(--mo);color:var(--t2);border-bottom:1px solid #1c284422;white-space:nowrap;}
+tbody td:first-child,tbody td.lf{text-align:left;}
+tbody tr{cursor:pointer;transition:background .12s;}
+tbody tr:hover{background:var(--hv);}
+.row-id{color:var(--cy);font-weight:600;}
+.row-title{color:var(--t1);font-weight:500;font-size:10px;max-width:280px;overflow:hidden;text-overflow:ellipsis;display:inline-block;vertical-align:middle;}
+.row-cat{color:var(--t3);font-size:10px;}
+
+/* heartbeat strip */
+.hb{display:inline-flex;gap:1.5px;vertical-align:middle;}
+.hb-cell{width:5px;height:14px;border-radius:1px;background:var(--bd);}
+.hb-cell.A{background:var(--gn);}
+.hb-cell.I{background:var(--rd);}
+.hb-cell.U{background:#1c2844;}
+
+/* status pill */
+.pill{display:inline-block;font:700 9px/1 var(--mo);letter-spacing:.5px;padding:3px 6px;border-radius:4px;text-transform:uppercase;}
+.pill.A{background:rgba(46,204,113,.18);color:var(--gn);}
+.pill.I{background:rgba(255,91,91,.18);color:var(--rd);}
+.pill.U{background:rgba(107,127,163,.18);color:var(--t3);}
+.pill.flag{background:rgba(255,159,67,.18);color:var(--or);margin-left:4px;}
+
+/* PAGINATION */
+.pg{display:flex;justify-content:space-between;align-items:center;margin-top:14px;flex-wrap:wrap;gap:10px;}
+.pg-info{font:500 11px/1 var(--mo);color:var(--t3);}
+.pg-info b{color:var(--cy);}
+.pg-ctrls{display:flex;gap:5px;align-items:center;}
+.pg-ctrls button{font:600 11px/1 var(--mo);background:var(--sf);border:1px solid var(--bd);color:var(--t2);padding:7px 11px;border-radius:6px;cursor:pointer;transition:all .15s;min-width:32px;}
+.pg-ctrls button:hover:not(:disabled){border-color:var(--cy);color:var(--cy);}
+.pg-ctrls button.active{background:var(--cy);color:#000;border-color:var(--cy);}
+.pg-ctrls button:disabled{opacity:.3;cursor:not-allowed;}
+.pg-ctrls select{background:var(--sf);border:1px solid var(--bd);color:var(--t2);padding:7px 11px;border-radius:6px;font:600 10px var(--mo);cursor:pointer;}
+
+/* DRAWER */
+.drwr-bg{position:fixed;inset:0;background:rgba(5,8,16,.7);backdrop-filter:blur(4px);z-index:200;opacity:0;pointer-events:none;transition:opacity .25s;}
+.drwr-bg.open{opacity:1;pointer-events:auto;}
+.drwr{position:fixed;top:0;right:-100%;width:780px;max-width:100vw;height:100vh;background:var(--cd);border-left:1px solid var(--bd2);z-index:201;overflow-y:auto;transition:right .3s ease;box-shadow:-12px 0 40px rgba(0,0,0,.6);}
+.drwr.open{right:0;}
+.drwr-h{padding:22px 28px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:flex-start;gap:12px;position:sticky;top:0;background:var(--cd);z-index:2;}
+.drwr-h .id{font:800 22px/1 var(--mo);color:var(--cy);}
+.drwr-h .id .pa{font:500 11px var(--mo);color:var(--t3);margin-left:6px;}
+.drwr-h .ttl{font:500 13px/1.4 var(--sa);color:var(--t1);margin-top:8px;}
+.drwr-h .meta{font:500 10px/1.4 var(--mo);color:var(--t3);margin-top:6px;}
+.drwr-close{background:none;border:1px solid var(--bd);color:var(--t2);width:30px;height:30px;border-radius:6px;cursor:pointer;font:700 14px var(--mo);display:flex;align-items:center;justify-content:center;}
+.drwr-close:hover{border-color:var(--rd);color:var(--rd);}
+.drwr-b{padding:24px 28px;}
+.drwr-sec{margin-bottom:22px;}
+.drwr-sec h4{font:700 11px/1 var(--mo);text-transform:uppercase;letter-spacing:1.2px;color:var(--cy);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--bd);}
+.attr-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 16px;}
+.attr-row{display:flex;justify-content:space-between;font:500 11px/1.4 var(--mo);padding:4px 0;}
+.attr-row .al{color:var(--t3);}.attr-row .av{color:var(--t1);font-weight:600;text-align:right;}
+.hb-large{display:flex;gap:3px;align-items:center;flex-wrap:wrap;}
+.hb-large .hb-l-cell{width:14px;height:24px;border-radius:2px;background:var(--bd);position:relative;}
+.hb-large .hb-l-cell.A{background:var(--gn);}
+.hb-large .hb-l-cell.I{background:var(--rd);}
+.hb-large .hb-l-cell:hover::after{content:attr(data-d);position:absolute;bottom:30px;left:50%;transform:translateX(-50%);background:#0c1224;border:1px solid var(--cy);border-radius:4px;padding:4px 8px;font:500 9px var(--mo);color:var(--t1);white-space:nowrap;z-index:5;}
+.hb-large .hb-l-cell:hover::before{content:attr(data-q);position:absolute;bottom:50px;left:50%;transform:translateX(-50%);background:#0c1224;border:1px solid var(--bd);border-radius:4px;padding:3px 7px;font:500 9px var(--mo);color:var(--t2);white-space:nowrap;z-index:5;}
+.qty-spark{height:60px;background:var(--cd2);border-radius:8px;padding:8px;border:1px solid var(--bd);}
+.yoy-tbl{width:100%;border-collapse:collapse;font-family:var(--mo);}
+.yoy-tbl th,.yoy-tbl td{padding:7px 8px;text-align:right;font:500 10px var(--mo);border-bottom:1px solid #1c284433;}
+.yoy-tbl th{color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.6px;font-size:9px;}
+.yoy-tbl td{color:var(--t1);}
+.yoy-tbl td:first-child,.yoy-tbl th:first-child{text-align:left;color:var(--t2);}
+.yoy-tbl tr.yoyi-row{background:rgba(255,159,67,.06);}
+.yoy-tbl .delta{font-size:9px;font-weight:700;}
+
+/* MODAL */
+.mdl-bg{position:fixed;inset:0;background:rgba(5,8,16,.78);backdrop-filter:blur(6px);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
+.mdl-bg.open{display:flex;}
+.mdl{background:var(--cd);border:1px solid var(--bd2);border-radius:14px;width:100%;max-width:780px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;}
+.mdl-h{padding:22px 26px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;gap:14px;}
+.mdl-h h3{font:700 14px/1 var(--mo);letter-spacing:1.4px;text-transform:uppercase;color:var(--t1);display:flex;align-items:center;gap:10px;}
+.mdl-h h3 .ico{color:var(--cy);}
+.mdl-h .badge{font:700 9px/1 var(--mo);letter-spacing:.8px;background:rgba(0,229,200,.12);color:var(--cy);padding:5px 9px;border-radius:5px;text-transform:uppercase;}
+.mdl-b{padding:22px 26px;overflow-y:auto;flex:1;}
+.mdl-f{padding:16px 26px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--cd2);}
+
+.mdl-section{margin-bottom:22px;}
+.mdl-section .label{font:700 10px/1 var(--mo);letter-spacing:1.2px;text-transform:uppercase;color:var(--cy);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.mdl-section .label .lh{font:500 10px var(--mo);color:var(--t3);text-transform:none;letter-spacing:0;font-style:italic;}
+
+.cond-row{display:grid;grid-template-columns:32px 1fr auto auto auto auto;gap:8px;background:var(--cd2);border:1px solid var(--bd);border-radius:8px;padding:9px 10px;margin-bottom:7px;align-items:center;}
+.cond-num{width:24px;height:24px;border-radius:50%;background:var(--cy);color:#000;font:800 11px/1 var(--mo);display:flex;align-items:center;justify-content:center;}
+.cond-metric{font:600 12px var(--mo);color:var(--t1);}
+.cond-op{background:var(--sf);border:1px solid var(--bd2);color:var(--cy);padding:5px 10px;border-radius:5px;font:700 11px var(--mo);min-width:50px;text-align:center;}
+.cond-val{background:var(--sf);border:1px solid var(--bd2);color:var(--t1);padding:5px 10px;border-radius:5px;font:600 12px var(--mo);min-width:80px;text-align:center;}
+.cond-period{font:500 11px var(--mo);color:var(--t3);font-style:italic;}
+.cond-x{background:none;border:none;color:var(--t3);cursor:pointer;width:22px;height:22px;border-radius:4px;font:700 14px var(--mo);}
+.cond-x:hover{color:var(--rd);background:rgba(255,91,91,.1);}
+
+.add-cond{width:100%;padding:13px;background:transparent;border:1px dashed var(--bd2);border-radius:8px;color:var(--cy);font:700 11px/1 var(--mo);letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .15s;}
+.add-cond:hover{background:rgba(0,229,200,.05);border-color:var(--cy);}
+
+.preset-grid{display:flex;flex-wrap:wrap;gap:7px;}
+.preset-pill{background:var(--cd2);border:1px solid var(--bd);color:var(--t2);padding:8px 12px;border-radius:6px;font:600 11px var(--mo);cursor:pointer;transition:all .15s;}
+.preset-pill:hover{border-color:var(--cy);color:var(--cy);background:rgba(0,229,200,.06);}
+
+.saved-list{background:var(--cd2);border:1px solid var(--bd);border-radius:8px;padding:14px;text-align:center;color:var(--t3);font:500 11px var(--mo);min-height:50px;display:flex;align-items:center;justify-content:center;}
+.saved-list.has-items{display:block;text-align:left;}
+.saved-item{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px dashed #1c284455;}
+.saved-item:last-child{border-bottom:none;}
+.saved-item-name{font:600 12px var(--mo);color:var(--t1);}
+.saved-item-actions{display:flex;gap:5px;}
+.saved-act{background:none;border:1px solid var(--bd);color:var(--t3);padding:4px 8px;border-radius:4px;font:600 9px var(--mo);cursor:pointer;text-transform:uppercase;letter-spacing:.5px;}
+.saved-act:hover.apply{border-color:var(--cy);color:var(--cy);}
+.saved-act:hover.del{border-color:var(--rd);color:var(--rd);}
+
+.save-row{display:flex;gap:8px;}
+.save-input{flex:1;background:var(--sf);border:1px solid var(--bd);color:var(--t1);padding:8px 12px;border-radius:6px;font:500 12px var(--mo);outline:none;}
+.save-input:focus{border-color:var(--cy);}
+.btn-primary{background:var(--cy);color:#000;border:none;padding:9px 16px;border-radius:6px;font:700 11px var(--mo);letter-spacing:.6px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary:hover{filter:brightness(1.1);}
+.btn-secondary{background:transparent;border:1px solid var(--bd2);color:var(--t2);padding:9px 16px;border-radius:6px;font:700 11px var(--mo);letter-spacing:.6px;cursor:pointer;}
+.btn-secondary:hover{border-color:var(--cy);color:var(--cy);}
+.btn-danger{background:transparent;border:1px solid var(--bd2);color:var(--rd);padding:9px 16px;border-radius:6px;font:700 11px var(--mo);letter-spacing:.6px;cursor:pointer;}
+.btn-danger:hover{background:rgba(255,91,91,.08);}
+
+/* Add Filter Condition popup */
+.acmdl{background:var(--cd);border:1px solid var(--cy);border-radius:12px;padding:22px 24px;width:100%;max-width:430px;}
+.acmdl h4{font:700 13px/1 var(--mo);letter-spacing:1.2px;text-transform:uppercase;color:var(--t1);margin-bottom:16px;}
+.acmdl-row{display:grid;grid-template-columns:90px 1fr;gap:12px;margin-bottom:12px;align-items:center;}
+.acmdl-row label{font:600 10px/1 var(--mo);text-transform:uppercase;letter-spacing:.8px;color:var(--t3);}
+.acmdl-row select,.acmdl-row input{background:var(--sf);border:1px solid var(--bd);color:var(--t1);padding:9px 12px;border-radius:6px;font:500 12px var(--mo);outline:none;width:100%;}
+.acmdl-row select:focus,.acmdl-row input:focus{border-color:var(--cy);}
+.acmdl-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;}
+
+/* Date Modal — month grid */
+.dm-section{margin-bottom:22px;}
+.dm-section .label{font:700 10px/1 var(--mo);letter-spacing:1.2px;text-transform:uppercase;color:var(--cy);margin-bottom:10px;}
+.dm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.dm-cell{background:var(--cd2);border:1px solid var(--bd);border-radius:8px;padding:14px 10px;text-align:center;cursor:pointer;font:600 12px var(--mo);color:var(--t2);transition:all .15s;}
+.dm-cell:hover{border-color:var(--cy);color:var(--cy);}
+.dm-cell.selected{background:rgba(0,229,200,.12);border-color:var(--cy);color:var(--cy);}
+.dm-cell.compare{background:rgba(255,159,67,.12);border-color:var(--or);color:var(--or);}
+.dm-cell .dm-y{display:block;font:500 9px var(--mo);color:var(--t3);margin-top:2px;}
+.dm-quick{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.dm-quick button{font:600 10px var(--mo);background:transparent;border:1px solid var(--bd);color:var(--t2);padding:6px 10px;border-radius:5px;cursor:pointer;}
+.dm-quick button:hover{border-color:var(--cy);color:var(--cy);}
+.dm-quick button.active{background:rgba(0,229,200,.1);border-color:var(--cy);color:var(--cy);}
+
+.ft{text-align:center;padding:24px;font:500 11px/1 var(--mo);color:var(--t3);border-top:1px solid var(--bd);margin-top:20px;}
+
+/* loading */
+.loader{text-align:center;padding:80px;font:500 13px var(--mo);color:var(--t3);}
+.loader .lspin{display:inline-block;width:14px;height:14px;border:2px solid var(--bd);border-top-color:var(--cy);border-radius:50%;animation:spin .8s linear infinite;margin-right:10px;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+@media(max-width:1200px){.hero{grid-template-columns:repeat(3,1fr);}.yoyi-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:768px){.hero,.yoyi-grid{grid-template-columns:1fr 1fr;}.hdr{flex-direction:column;align-items:flex-start;gap:14px;}.w{padding:14px;}.const-wrap{height:420px;}.drwr{width:100%;}}
+</style>
+</head>
+<body>
+<div class="w">
+<div class="hdr">
+  <div class="hdr-l">
+    <div class="cr"><a href="index.html">← Dashboard Hub</a> / <a href="oos.html">OOS</a> / ASIN Explorer</div>
+    <h1>ASIN Explorer</h1>
+    <div class="sub">Per-ASIN Ad + T-Sales + Inventory · YoY Inactive Detection · 3D Constellation</div>
+  </div>
+  <div class="hdr-r" id="hdrR">Loading…</div>
+</div>
+
+<div id="app">
+  <div class="loader"><span class="lspin"></span>Loading ASIN data…</div>
+</div>
+
+<div class="ft" id="footer">SmartSign USA · ASIN Explorer · Data feed: asin_data.json</div>
+</div>
+
+<!-- DRAWER -->
+<div class="drwr-bg" id="drwrBg"></div>
+<aside class="drwr" id="drwr"></aside>
+
+<!-- CUSTOM FILTER MODAL -->
+<div class="mdl-bg" id="filterModal">
+  <div class="mdl">
+    <div class="mdl-h">
+      <h3><span class="ico">⚙</span> Custom Filters <span class="badge" id="condCountBadge">0 active</span></h3>
+      <button class="cond-x" style="font-size:18px;width:30px;height:30px;" onclick="closeFilterModal()">×</button>
+    </div>
+    <div class="mdl-b">
+      <div class="mdl-section">
+        <div class="label">Active Conditions <span class="lh">(all must match — AND logic)</span></div>
+        <div id="condList"></div>
+        <button class="add-cond" onclick="openAddCondModal()">+ Add Filter</button>
+      </div>
+      <div class="mdl-section">
+        <div class="label">Quick Presets <span class="lh">(click to apply)</span></div>
+        <div class="preset-grid" id="presetGrid"></div>
+      </div>
+      <div class="mdl-section">
+        <div class="label">Saved Presets</div>
+        <div class="saved-list" id="savedList">No saved presets yet</div>
+        <div style="height:10px"></div>
+        <div class="save-row">
+          <input class="save-input" id="saveName" placeholder="Name this filter set…">
+          <button class="btn-primary" onclick="saveCurrentPreset()">💾 Save Current</button>
+        </div>
+      </div>
+    </div>
+    <div class="mdl-f">
+      <span style="font:500 11px var(--mo);color:var(--t3)" id="condStatus">0 condition(s) active</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn-danger" onclick="clearAllConditions()">Clear All</button>
+        <button class="btn-primary" onclick="applyConditions()" id="applyBtn">Apply Filter(s)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD CONDITION MODAL -->
+<div class="mdl-bg" id="addCondModal" style="z-index:310">
+  <div class="acmdl">
+    <h4>Add Filter Condition</h4>
+    <div class="acmdl-row"><label>Metric</label><select id="acMetric"></select></div>
+    <div class="acmdl-row"><label>Operator</label><select id="acOp"></select></div>
+    <div class="acmdl-row"><label>Value</label><input id="acVal" placeholder="e.g., 1.5"></div>
+    <div class="acmdl-row" id="acPeriodRow"><label>Period</label><select id="acPeriod"></select></div>
+    <div class="acmdl-actions">
+      <button class="btn-secondary" onclick="closeAddCondModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveNewCondition()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- DATE MODAL -->
+<div class="mdl-bg" id="dateModal">
+  <div class="mdl" style="max-width:680px">
+    <div class="mdl-h">
+      <h3><span class="ico">📅</span> Period Selector</h3>
+      <button class="cond-x" style="font-size:18px;width:30px;height:30px;" onclick="closeDateModal()">×</button>
+    </div>
+    <div class="mdl-b">
+      <div class="dm-section">
+        <div class="label">Quick Picks</div>
+        <div class="dm-quick" id="dmQuick"></div>
+      </div>
+      <div class="dm-section">
+        <div class="label">Primary Period (2026)</div>
+        <div class="dm-grid" id="dmPrimary"></div>
+      </div>
+      <div class="dm-section">
+        <div class="label">Comparison Period (2025) <span class="lh" style="color:var(--t3);font:500 10px var(--mo);text-transform:none;letter-spacing:0;">— same months from last year</span></div>
+        <div class="dm-grid" id="dmCompare"></div>
+      </div>
+      <div style="font:500 11px var(--mo);color:var(--t3);padding-top:12px;border-top:1px dashed #1c284455;text-align:center" id="dmStatus"></div>
+    </div>
+    <div class="mdl-f">
+      <span style="font:500 11px var(--mo);color:var(--t3)">Select primary period; comparison auto-mirrors</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn-secondary" onclick="closeDateModal()">Cancel</button>
+        <button class="btn-primary" onclick="applyDateRange()">Apply Period</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+//==========================================================================
+// CONFIG / GLOBALS
+//==========================================================================
+const FILE = 'asin_data.json';
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const F = {
+  k: n => '$' + (Math.abs(n) >= 1e6 ? (n/1e6).toFixed(2)+'M' : Math.abs(n) >= 1e3 ? (n/1e3).toFixed(1)+'K' : Math.round(n).toLocaleString()),
+  k0: n => '$' + Math.round(n).toLocaleString(),
+  n: n => Math.round(n).toLocaleString(),
+  pct: n => (n>=0?'+':'') + n.toFixed(0) + '%',
+  dp: (c, p) => { if (!p || p === 0) return { t: '—', c: '' }; const d = ((c-p)/Math.abs(p))*100; return { t: (d>=0?'+':'')+d.toFixed(0)+'%', c: d>=0?'up':'dn' }; }
+};
+const STORAGE_KEY = 'asin_explorer_saved_presets';
+const MONTH_KEYS = ['jan','feb','mar','apr'];
+const MONTH_LABELS = {jan:'January',feb:'February',mar:'March',apr:'April'};
+const MONTH_LABELS_SHORT = {jan:'Jan',feb:'Feb',mar:'Mar',apr:'Apr'};
+const METRIC_ORDER = ['Spend','Paid Orders','Ad Sales','Sessions','Total Sales','Total Orders'];
+
+let DATA = null;          // raw loaded
+let STATE = {
+  search: '',
+  grain: 'child',         // child | parent
+  conditions: [],         // active filter conditions
+  primaryMonths: ['jan','feb','mar','apr'], // YTD by default
+  page: 1,
+  pageSize: 50,
+  sortKey: 'tsales_26',
+  sortDir: 'desc',
+};
+let FILTERED = [];        // current filtered ASIN list
+let CONST_3D = null;      // Three.js scope
+
+//==========================================================================
+// LOAD
+//==========================================================================
+async function init() {
+  try {
+    const r = await fetch(FILE);
+    DATA = await r.json();
+    enrich();
+    render();
+  } catch (e) {
+    $('#app').innerHTML = `<p style="text-align:center;padding:80px;color:var(--rd);font:500 13px var(--mo)">Could not load asin_data.json<br><small style="color:var(--t3)">${e.message}</small></p>`;
+  }
+}
+
+//==========================================================================
+// ENRICHMENT — compute derived fields per ASIN once at load
+//==========================================================================
+function enrich() {
+  const dt = new Date();
+  for (const a of DATA.asins) {
+    // YTD totals (sum of jan/feb/mar/apr for selected months)
+    a._ytd26 = sumBiz(a, MONTH_KEYS, '26');
+    a._ytd25 = sumBiz(a, MONTH_KEYS, '25');
+    a._roas26 = a._ytd26[0] > 0 ? a._ytd26[2] / a._ytd26[0] : 0;
+    a._roas25 = a._ytd25[0] > 0 ? a._ytd25[2] / a._ytd25[0] : 0;
+    a._acos26 = a._ytd26[2] > 0 ? (a._ytd26[0] / a._ytd26[2]) * 100 : 0;
+    // Latest status & qty
+    a._latestStatus = a.st[a.st.length-1];
+    a._latestQty = a.q[a.q.length-1];
+    // Weeks inactive in last 4
+    a._inactive4w = (a.st.slice(-4).match(/I/g) || []).length;
+    // Recently flipped active->inactive (was A 4w ago, now I)
+    a._justInactive = a.st.length>=4 && a.st[a.st.length-5]==='A' && a._latestStatus==='I';
+    // Recovery: was I 4w ago, now A
+    a._recovered = a.st.length>=4 && a.st[a.st.length-5]==='I' && a._latestStatus==='A';
+    // Days since open
+    if (a.od) {
+      const od = new Date(a.od);
+      a._daysOpen = Math.floor((dt - od) / 86400000);
+    } else {
+      a._daysOpen = null;
+    }
+    // YoY delta total sales (YTD)
+    a._yoyTSDelta = a._ytd26[4] - a._ytd25[4];
+    a._yoyTSPct = a._ytd25[4] > 0 ? ((a._ytd26[4]-a._ytd25[4])/a._ytd25[4])*100 : null;
+  }
+}
+function sumBiz(a, months, year) {
+  const out = [0,0,0,0,0,0];
+  for (const m of months) {
+    const v = a.b[m+year];
+    if (v) for (let i=0;i<6;i++) out[i] += v[i];
+  }
+  return out;
+}
+
+//==========================================================================
+// MAIN RENDER
+//==========================================================================
+function render() {
+  $('#hdrR').innerHTML = `Source: <b>${DATA.meta.source_file || 'OOS xlsx'}</b><br>Generated: <b>${(DATA.meta.generated_at||'').slice(0,10)}</b><br>${DATA.meta.total_asins.toLocaleString()} ASINs · ${DATA.meta.status_dates.length} weeks tracked`;
+
+  $('#app').innerHTML = `
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hc c1"><div class="lb">Total ASINs</div><div class="vl">${F.n(DATA.summary.total)}</div><div class="dt">${DATA.distinct.category.length} categories tracked</div></div>
+      <div class="hc c2"><div class="lb">Active Now</div><div class="vl up">${F.n(DATA.summary.active_latest)}</div><div class="dt">${(DATA.summary.active_latest/DATA.summary.total*100).toFixed(1)}% of catalog</div></div>
+      <div class="hc c3"><div class="lb">Inactive Now</div><div class="vl dn">${F.n(DATA.summary.inactive_latest)}</div><div class="dt">${(DATA.summary.inactive_latest/DATA.summary.total*100).toFixed(1)}% of catalog</div></div>
+      <div class="hc c4"><div class="lb">YoY Inactive (any month)</div><div class="vl wn">${F.n(DATA.summary.yoyi_total_unique)}</div><div class="dt">unique ASINs flagged Jan–Apr</div></div>
+      <div class="hc c5"><div class="lb">Lost YoY T-Sales</div><div class="vl pu">${F.k(heroLostSales())}</div><div class="dt">YTD across flagged cohort</div></div>
+    </div>
+
+    <!-- 3D CONSTELLATION -->
+    <div class="sc">
+      <div class="sh">
+        <div class="st">★ ASIN Constellation <span class="stb">(drag to rotate · scroll to zoom · click point for detail)</span></div>
+        <div style="display:flex;gap:8px"><button class="const-btn" id="rotBtn">Auto-Rotate</button><button class="const-btn" id="resetBtn">Reset View</button></div>
+      </div>
+      <div class="const-wrap">
+        <canvas id="constCanvas"></canvas>
+        <div class="const-overlay">
+          <div class="const-axis"><span class="ax">X</span> Total Sales (log)</div>
+          <div class="const-axis"><span class="ax y">Y</span> ROAS</div>
+          <div class="const-axis"><span class="ax z">Z</span> Spend (log)</div>
+        </div>
+        <div class="const-legend">
+          <div class="const-leg-item"><span class="const-leg-dot" style="background:#2ecc71;color:#2ecc71"></span>Active</div>
+          <div class="const-leg-item"><span class="const-leg-dot" style="background:#ff5b5b;color:#ff5b5b"></span>Inactive</div>
+          <div class="const-leg-item"><span class="const-leg-dot" style="background:#ff9f43;color:#ff9f43"></span>YoY Inactive Flagged</div>
+          <div class="const-leg-item"><span class="const-leg-dot" style="background:#a78bfa;color:#a78bfa"></span>Just Flipped</div>
+          <div class="const-leg-item" style="color:var(--t3)">Size = Sessions</div>
+        </div>
+        <div class="const-info" id="constInfo">Showing <b>${DATA.summary.total.toLocaleString()}</b> ASINs</div>
+        <div class="const-tooltip" id="constTip"></div>
+      </div>
+    </div>
+
+    <!-- YOY INACTIVE MONTHLY -->
+    <div class="sc">
+      <div class="sh">
+        <div class="st">⚠ YoY Inactive Cohort · Monthly Impact <span class="stb">(click any month to filter table to that cohort)</span></div>
+      </div>
+      <div class="yoyi-grid" id="yoyiGrid"></div>
+    </div>
+
+    <!-- TOOLBAR + TABLE -->
+    <div class="tb">
+      <div class="tb-row">
+        <input class="tb-search" id="searchInput" placeholder="Search by ASIN, SKU, parent, title…">
+        <button class="tb-btn" id="dateBtn" onclick="openDateModal()">📅 <span id="dateBtnLabel">YTD (Jan–Apr)</span></button>
+        <button class="tb-btn" id="filterBtn" onclick="openFilterModal()">⚙ Custom Filters <span class="bdg" id="filterCount" style="display:none">0</span></button>
+        <div class="tb-toggle">
+          <button class="active" data-grain="child" onclick="setGrain('child')">Child ASIN</button>
+          <button data-grain="parent" onclick="setGrain('parent')">Parent (rollup)</button>
+        </div>
+      </div>
+      <div class="tb-row">
+        <div class="tb-presets" id="presetChips"></div>
+        <div class="tb-status" id="resultStatus">— ASINs</div>
+      </div>
+    </div>
+
+    <div class="sc" style="padding:0;">
+      <div class="tw"><table id="tbl">
+        <thead id="tblHead"></thead>
+        <tbody id="tblBody"></tbody>
+      </table></div>
+      <div style="padding:14px 22px;"><div class="pg" id="pgWrap"></div></div>
+    </div>
+  `;
+
+  buildYoyiCards();
+  build3DConstellation();
+  buildPresetChips();
+  $('#searchInput').addEventListener('input', e => { STATE.search = e.target.value.trim().toLowerCase(); STATE.page = 1; refreshTable(); });
+  applyFilters();
+}
+
+//==========================================================================
+// HERO HELPERS
+//==========================================================================
+function heroLostSales() {
+  let total = 0;
+  for (const m of DATA.yoyi_summary) total += m.impact['Total Sales']['25'] - m.impact['Total Sales']['26'];
+  return total;
+}
+
+//==========================================================================
+// YOYI MONTHLY CARDS
+//==========================================================================
+function buildYoyiCards() {
+  $('#yoyiGrid').innerHTML = DATA.yoyi_summary.map(m => {
+    const lost = m.impact['Total Sales']['25'] - m.impact['Total Sales']['26'];
+    const lostOrders = m.impact['Total Orders']['25'] - m.impact['Total Orders']['26'];
+    const lostSpend = m.impact['Spend']['25'] - m.impact['Spend']['26'];
+    const tsd = F.dp(m.impact['Total Sales']['26'], m.impact['Total Sales']['25']);
+    const sd  = F.dp(m.impact['Spend']['26'], m.impact['Spend']['25']);
+    return `<div class="yc" data-mkey="${m.mkey}" onclick="filterToYoyi('${m.mkey}')">
+      <div class="ym">${m.month} ${m.month==='January'?'2026':''}<span class="ycn">${m.qualified}</span></div>
+      <div class="yr"><span class="yl">T-Sales 25</span><span class="yv">${F.k(m.impact['Total Sales']['25'])}</span></div>
+      <div class="yr"><span class="yl">T-Sales 26</span><span><span class="yv">${F.k(m.impact['Total Sales']['26'])}</span><span class="yd ${tsd.c}">${tsd.t}</span></span></div>
+      <div class="yr"><span class="yl">Lost T-Sales</span><span class="yv dn">${F.k(lost)}</span></div>
+      <div class="yr"><span class="yl">Lost Orders</span><span class="yv dn">${F.n(lostOrders)}</span></div>
+      <div class="yr"><span class="yl">Spend 25→26</span><span><span class="yv">${F.k(m.impact['Spend']['25'])} → ${F.k(m.impact['Spend']['26'])}</span></span></div>
+      <div class="yd-bd">Detection: ${m.detection.detected_by_status_only} status-only · ${m.detection.detected_by_zero_rule_only} zero-rule · ${m.detection.detected_by_both} both</div>
+    </div>`;
+  }).join('');
+}
+
+function filterToYoyi(mkey) {
+  // Toggle: if already filtered to this, clear; otherwise filter
+  const existingIdx = STATE.conditions.findIndex(c => c.id === '__yoyi__'+mkey);
+  if (existingIdx >= 0) {
+    STATE.conditions.splice(existingIdx, 1);
+  } else {
+    // Remove other yoyi conditions first (single-select)
+    STATE.conditions = STATE.conditions.filter(c => !c.id || !c.id.startsWith('__yoyi__'));
+    STATE.conditions.push({ id: '__yoyi__'+mkey, metric: 'yoyi_month', op: '=', val: mkey, period: 'na', label: `YoY Inactive: ${MONTH_LABELS[mkey]}` });
+  }
+  $$('.yc').forEach(c => c.classList.toggle('active', c.dataset.mkey === mkey && existingIdx < 0));
+  applyFilters();
+  renderConditions();
+}
+
+//==========================================================================
+// CUSTOM FILTERS — engine
+//==========================================================================
+const METRIC_DEFS = {
+  // metric_id: { label, type, getter(asin, period) -> value, periods: [...] | 'na' }
+  spend:        { label: 'Spend ($)',       type: 'num',  field: 0,  getter: numGetter },
+  paid_orders:  { label: 'Paid Orders',     type: 'num',  field: 1,  getter: numGetter },
+  ad_sales:     { label: 'Ad Sales ($)',    type: 'num',  field: 2,  getter: numGetter },
+  sessions:     { label: 'Sessions',        type: 'num',  field: 3,  getter: numGetter },
+  total_sales:  { label: 'Total Sales ($)', type: 'num',  field: 4,  getter: numGetter },
+  total_orders: { label: 'Total Orders',    type: 'num',  field: 5,  getter: numGetter },
+  roas:         { label: 'ROAS',            type: 'num',  getter: roasGetter },
+  acos:         { label: 'ACOS (%)',        type: 'num',  getter: acosGetter },
+  yoy_ts_delta: { label: 'YoY Δ T-Sales ($)',type: 'num', getter: yoyDeltaGetter },
+  yoy_ts_pct:   { label: 'YoY Δ T-Sales (%)',type: 'num', getter: yoyPctGetter },
+
+  latest_status: { label: 'Latest Status',  type: 'sel', options: ['Active','Inactive'], getter: a => a._latestStatus==='A'?'Active':a._latestStatus==='I'?'Inactive':'Unknown', noPeriod: true },
+  ever_inactive: { label: 'Ever Inactive (18wk)', type: 'sel', options: ['Yes','No'], getter: a => a.st.includes('I')?'Yes':'No', noPeriod: true },
+  weeks_inactive_4w: { label: 'Weeks Inactive in Last 4', type: 'num', getter: a => a._inactive4w, noPeriod: true },
+  category:     { label: 'Category',        type: 'sel', options: () => DATA.distinct.category, getter: a => a.c, noPeriod: true },
+  subcategory:  { label: 'Subcategory',     type: 'sel', options: () => DATA.distinct.subcategory, getter: a => a.sc, noPeriod: true },
+  ownership:    { label: 'Ownership',       type: 'sel', options: () => DATA.distinct.ownership, getter: a => a.o, noPeriod: true },
+  fulfillment:  { label: 'Fulfillment',     type: 'sel', options: () => DATA.distinct.fulfillment, getter: a => a.f, noPeriod: true },
+  has_inv:      { label: 'Has Inventory (latest qty>0)', type: 'sel', options: ['Yes','No'], getter: a => a._latestQty>0?'Yes':'No', noPeriod: true },
+  latest_qty:   { label: 'Latest Inventory Qty', type: 'num', getter: a => a._latestQty, noPeriod: true },
+  price:        { label: 'Price ($)',       type: 'num', getter: a => a.p||0, noPeriod: true },
+  days_open:    { label: 'Days Since Listed',type: 'num', getter: a => a._daysOpen||0, noPeriod: true },
+  yoyi_month:   { label: 'YoY Inactive — month',type: 'sel', options: ['jan','feb','mar','apr','any'], getter: (a,p,v) => { if (v==='any') return a.yi.length>0?v:null; return a.yi.includes(v)?v:null; }, noPeriod: true },
+  just_inactive:{ label: 'Just Flipped Active→Inactive (4w)', type: 'sel', options: ['Yes','No'], getter: a => a._justInactive?'Yes':'No', noPeriod: true },
+  recovered:    { label: 'Recovered Inactive→Active (4w)', type: 'sel', options: ['Yes','No'], getter: a => a._recovered?'Yes':'No', noPeriod: true },
+};
+const PERIOD_OPTS = [
+  { id: 'ytd',  label: 'YTD (selected months)' },
+  { id: 'jan26',label: 'Jan 2026' },
+  { id: 'feb26',label: 'Feb 2026' },
+  { id: 'mar26',label: 'Mar 2026' },
+  { id: 'apr26',label: 'Apr 2026' },
+  { id: 'jan25',label: 'Jan 2025' },
+  { id: 'feb25',label: 'Feb 2025' },
+  { id: 'mar25',label: 'Mar 2025' },
+  { id: 'apr25',label: 'Apr 2025' },
+];
+
+function numGetter(a, period, _, mDef) {
+  if (period === 'ytd') {
+    return STATE.primaryMonths.reduce((sum,m) => sum + (a.b[m+'26']?.[mDef.field]||0), 0);
+  }
+  return a.b[period]?.[mDef.field]||0;
+}
+function roasGetter(a, period) {
+  if (period === 'ytd') {
+    let s=0,as=0;
+    for (const m of STATE.primaryMonths) { s+=a.b[m+'26']?.[0]||0; as+=a.b[m+'26']?.[2]||0; }
+    return s>0?as/s:0;
+  }
+  const v=a.b[period];return v&&v[0]>0?v[2]/v[0]:0;
+}
+function acosGetter(a, period) {
+  if (period === 'ytd') {
+    let s=0,as=0;
+    for (const m of STATE.primaryMonths) { s+=a.b[m+'26']?.[0]||0; as+=a.b[m+'26']?.[2]||0; }
+    return as>0?(s/as)*100:0;
+  }
+  const v=a.b[period];return v&&v[2]>0?(v[0]/v[2])*100:0;
+}
+function yoyDeltaGetter(a, period) {
+  if (period === 'ytd' || !period || period === 'na') {
+    return a._ytd26[4] - a._ytd25[4];
+  }
+  // period like 'jan26' — compare to 'jan25'
+  const m = period.slice(0,3);
+  return (a.b[m+'26']?.[4]||0) - (a.b[m+'25']?.[4]||0);
+}
+function yoyPctGetter(a, period) {
+  let v25, v26;
+  if (period === 'ytd' || !period || period === 'na') {
+    v25 = a._ytd25[4]; v26 = a._ytd26[4];
+  } else {
+    const m = period.slice(0,3); v25 = a.b[m+'25']?.[4]||0; v26 = a.b[m+'26']?.[4]||0;
+  }
+  return v25>0 ? ((v26-v25)/v25)*100 : 0;
+}
+
+const QUICK_PRESETS = [
+  { id: 'lost-rev', label: '⬇ Lost YoY T-Sales >$500', conds: [
+    { metric: 'yoyi_month', op: '=', val: 'any', period: 'na' },
+    { metric: 'yoy_ts_delta', op: '<', val: -500, period: 'ytd' },
+  ]},
+  { id: 'has-inv-inactive', label: '📦 Has Inventory but Inactive', conds: [
+    { metric: 'has_inv', op: '=', val: 'Yes', period: 'na' },
+    { metric: 'latest_status', op: '=', val: 'Inactive', period: 'na' },
+  ]},
+  { id: 'top-risk', label: '🔥 Top Revenue at Risk', conds: [
+    { metric: 'latest_status', op: '=', val: 'Inactive', period: 'na' },
+    { metric: 'total_sales', op: '>', val: 500, period: 'ytd' },
+  ]},
+  { id: 'just-flip', label: '⚡ Just Went Inactive (4w)', conds: [
+    { metric: 'just_inactive', op: '=', val: 'Yes', period: 'na' },
+  ]},
+  { id: 'recovered', label: '✓ Recovered (4w)', conds: [
+    { metric: 'recovered', op: '=', val: 'Yes', period: 'na' },
+  ]},
+  { id: 'spend-no-orders', label: '🩸 Spend>$50 · 0 Paid Orders', conds: [
+    { metric: 'spend', op: '>', val: 50, period: 'ytd' },
+    { metric: 'paid_orders', op: '=', val: 0, period: 'ytd' },
+  ]},
+  { id: 'newly-listed', label: '🆕 Listed <90d Ago', conds: [
+    { metric: 'days_open', op: '<', val: 90, period: 'na' },
+  ]},
+  { id: 'inactive-4w-streak', label: '🚫 Inactive 4+ Weeks Straight', conds: [
+    { metric: 'weeks_inactive_4w', op: '=', val: 4, period: 'na' },
+  ]},
+  { id: 'low-roas', label: '↘ ROAS < 1.5 · Spend > $100', conds: [
+    { metric: 'roas', op: '<', val: 1.5, period: 'ytd' },
+    { metric: 'spend', op: '>', val: 100, period: 'ytd' },
+  ]},
+  { id: 'high-roas', label: '⭐ Stars: ROAS > 5 · Orders > 10', conds: [
+    { metric: 'roas', op: '>', val: 5, period: 'ytd' },
+    { metric: 'paid_orders', op: '>', val: 10, period: 'ytd' },
+  ]},
+];
+
+function buildPresetChips() {
+  $('#presetChips').innerHTML = QUICK_PRESETS.map(p =>
+    `<button class="tb-preset" data-pid="${p.id}" onclick="applyPreset('${p.id}')">${p.label}</button>`
+  ).join('');
+  $('#presetGrid').innerHTML = QUICK_PRESETS.map(p =>
+    `<button class="preset-pill" onclick="applyPreset('${p.id}')">${p.label}</button>`
+  ).join('');
+}
+
+function applyPreset(pid) {
+  const p = QUICK_PRESETS.find(x => x.id === pid);
+  if (!p) return;
+  // Toggle: if same preset already active (same conds present), clear it; else apply
+  const isActive = $(`.tb-preset[data-pid="${pid}"]`)?.classList.contains('active');
+  if (isActive) {
+    STATE.conditions = STATE.conditions.filter(c => !c._presetId || c._presetId !== pid);
+    $$('.tb-preset').forEach(b => b.classList.toggle('active', false));
+  } else {
+    STATE.conditions = []; // replace any existing conds with this preset
+    p.conds.forEach((c, i) => STATE.conditions.push({...c, id: `${pid}_${i}`, _presetId: pid, label: `${METRIC_DEFS[c.metric].label} ${c.op} ${c.val}` + (c.period&&c.period!=='na'?` · ${periodLabel(c.period)}`:'')}));
+    $$('.tb-preset').forEach(b => b.classList.toggle('active', b.dataset.pid === pid));
+  }
+  applyFilters();
+  renderConditions();
+}
+
+function periodLabel(p) {
+  return PERIOD_OPTS.find(x => x.id === p)?.label || p;
+}
+
+//==========================================================================
+// FILTER ENGINE — apply STATE to DATA.asins -> FILTERED
+//==========================================================================
+function applyFilters() {
+  let arr = DATA.asins;
+  // Search
+  if (STATE.search) {
+    const q = STATE.search;
+    arr = arr.filter(a =>
+      (a.id && a.id.toLowerCase().includes(q)) ||
+      (a.pa && a.pa.toLowerCase().includes(q)) ||
+      (a.ss && a.ss.toLowerCase().includes(q)) ||
+      (a.sk && a.sk.toLowerCase().includes(q)) ||
+      (a.t && a.t.toLowerCase().includes(q))
+    );
+  }
+  // Conditions (AND)
+  for (const c of STATE.conditions) {
+    const def = METRIC_DEFS[c.metric];
+    if (!def) continue;
+    arr = arr.filter(a => {
+      const period = def.noPeriod ? null : (c.period || 'ytd');
+      const v = def.getter(a, period, c.val, def);
+      if (def.type === 'sel') {
+        if (c.metric === 'yoyi_month') return v !== null && v !== undefined;
+        return c.op === '=' ? v === c.val : v !== c.val;
+      }
+      const tv = parseFloat(c.val);
+      switch (c.op) {
+        case '>': return v > tv;
+        case '<': return v < tv;
+        case '>=':return v >= tv;
+        case '<=':return v <= tv;
+        case '=': return v === tv;
+        case '!=':return v !== tv;
+      }
+      return true;
+    });
+  }
+  FILTERED = arr;
+  refreshTable();
+  refreshConstellation();
+  refreshFilterCount();
+}
+
+function refreshFilterCount() {
+  const n = STATE.conditions.length;
+  const el = $('#filterCount');
+  if (el) {
+    el.textContent = n;
+    el.style.display = n>0?'inline-block':'none';
+  }
+  $('#filterBtn')?.classList.toggle('active', n>0);
+  $('#condCountBadge') && ($('#condCountBadge').textContent = `${n} active`);
+  $('#condStatus') && ($('#condStatus').textContent = `${n} condition(s) active`);
+  $('#applyBtn') && ($('#applyBtn').textContent = `Apply ${n} Filter${n!==1?'s':''}`);
+}
+
+//==========================================================================
+// TABLE
+//==========================================================================
+function refreshTable() {
+  // Optionally apply parent grain (rollup)
+  let rows = STATE.grain === 'parent' ? rollupParents(FILTERED) : FILTERED;
+  // Sort
+  rows = sortRows(rows);
+  const total = rows.length;
+  const ps = STATE.pageSize;
+  const totalPages = Math.max(1, Math.ceil(total/ps));
+  if (STATE.page > totalPages) STATE.page = totalPages;
+  const start = (STATE.page-1)*ps;
+  const slice = rows.slice(start, start+ps);
+
+  $('#tblHead').innerHTML = `<tr>
+    ${headerCell('id', 'ASIN')}
+    ${headerCell('cat', 'Category')}
+    ${headerCell('status', 'Status (18wk)')}
+    ${headerCell('latest_qty', 'Qty', true)}
+    ${headerCell('spend_26', 'Spend YTD', true)}
+    ${headerCell('tsales_26', 'T-Sales YTD', true)}
+    ${headerCell('tsales_25', 'T-Sales 25', true)}
+    ${headerCell('yoy_delta', 'YoY Δ', true)}
+    ${headerCell('roas_26', 'ROAS', true)}
+    ${headerCell('orders_26', 'Orders', true)}
+    ${headerCell('flag', 'Flag', true)}
+  </tr>`;
+
+  $('#tblBody').innerHTML = slice.length ? slice.map(rowHTML).join('') : `<tr><td colspan="11" style="text-align:center;padding:60px;color:var(--t3);">No ASINs match the current filters.</td></tr>`;
+  $$('#tblBody tr').forEach(tr => tr.addEventListener('click', () => openDrawer(tr.dataset.id, tr.dataset.parent==='1')));
+
+  // Pagination
+  $('#pgWrap').innerHTML = `
+    <div class="pg-info">Showing <b>${slice.length ? start+1 : 0}–${start+slice.length}</b> of <b>${F.n(total)}</b> ${STATE.grain==='parent'?'parent ASINs':'ASINs'}</div>
+    <div class="pg-ctrls">
+      <button onclick="setPage(1)" ${STATE.page===1?'disabled':''}>«</button>
+      <button onclick="setPage(${STATE.page-1})" ${STATE.page===1?'disabled':''}>‹</button>
+      ${pgButtons(STATE.page, totalPages)}
+      <button onclick="setPage(${STATE.page+1})" ${STATE.page===totalPages?'disabled':''}>›</button>
+      <button onclick="setPage(${totalPages})" ${STATE.page===totalPages?'disabled':''}>»</button>
+      <select onchange="setPageSize(this.value)">
+        <option value="25" ${ps==25?'selected':''}>25/page</option>
+        <option value="50" ${ps==50?'selected':''}>50/page</option>
+        <option value="100" ${ps==100?'selected':''}>100/page</option>
+        <option value="200" ${ps==200?'selected':''}>200/page</option>
+      </select>
+    </div>`;
+
+  $('#resultStatus').innerHTML = `<b>${F.n(total)}</b> match · <b>${F.k(rows.reduce((s,a)=>s+(a._ytd26?a._ytd26[4]:0),0))}</b> T-Sales YTD · <b>${F.k(rows.reduce((s,a)=>s+(a._ytd26?a._ytd26[0]:0),0))}</b> Spend YTD`;
+}
+
+function pgButtons(cur, tot) {
+  const out = [];
+  let s = Math.max(1, cur-2), e = Math.min(tot, cur+2);
+  if (s>1) out.push(`<button onclick="setPage(1)">1</button>${s>2?'<span style="color:var(--t3);font:500 11px var(--mo);padding:0 4px">…</span>':''}`);
+  for (let i=s;i<=e;i++) out.push(`<button class="${i===cur?'active':''}" onclick="setPage(${i})">${i}</button>`);
+  if (e<tot) out.push(`${e<tot-1?'<span style="color:var(--t3);font:500 11px var(--mo);padding:0 4px">…</span>':''}<button onclick="setPage(${tot})">${tot}</button>`);
+  return out.join('');
+}
+
+function setPage(n) { STATE.page = Math.max(1,n); refreshTable(); window.scrollTo({top: $('#tbl').getBoundingClientRect().top + window.scrollY - 80, behavior:'smooth'}); }
+function setPageSize(s) { STATE.pageSize = parseInt(s,10); STATE.page = 1; refreshTable(); }
+
+function headerCell(key, label, right) {
+  const arrow = STATE.sortKey === key ? `<span class="sortarrow">${STATE.sortDir==='desc'?'▼':'▲'}</span>` : '';
+  return `<th class="${right?'':'lf'}" onclick="sortBy('${key}')">${label}${arrow}</th>`;
+}
+function sortBy(key) {
+  if (STATE.sortKey === key) STATE.sortDir = STATE.sortDir==='desc'?'asc':'desc';
+  else { STATE.sortKey = key; STATE.sortDir = 'desc'; }
+  refreshTable();
+}
+
+function rowHTML(a) {
+  const flag = flagFor(a);
+  const yoyD = a._yoyTSDelta;
+  const yoyP = a._yoyTSPct;
+  const yoyClass = yoyD === 0 ? '' : yoyD > 0 ? 'up' : 'dn';
+  const yoyText = a._ytd25[4] === 0 ? (a._ytd26[4]>0?'NEW':'—') : (yoyP===null?'—':F.pct(yoyP));
+  return `<tr data-id="${a.id}" data-parent="${a._isParent?1:0}">
+    <td class="lf">
+      <div><span class="row-id">${a.id}</span> <span class="pill ${a._latestStatus}">${a._latestStatus==='A'?'Act':'Inact'}</span> ${flag}</div>
+      <div class="row-title">${a.t || ''}</div>
+    </td>
+    <td class="lf"><span class="row-cat">${a.c || '—'}<br>${a.sc || ''}</span></td>
+    <td class="lf"><div class="hb">${(a.st||'').split('').map(s => `<div class="hb-cell ${s}"></div>`).join('')}</div></td>
+    <td>${F.n(a._latestQty)}</td>
+    <td>${F.k(a._ytd26[0])}</td>
+    <td>${F.k(a._ytd26[4])}</td>
+    <td style="color:var(--t3)">${F.k(a._ytd25[4])}</td>
+    <td class="${yoyClass}">${yoyText}</td>
+    <td>${a._roas26.toFixed(2)}x</td>
+    <td>${F.n(a._ytd26[1])}</td>
+    <td style="font-size:9px;color:var(--or);text-transform:uppercase">${a._isParent ? `<span class="pill flag">${a._childCount} children</span>` : (a.yi.length ? a.yi.map(m=>MONTH_LABELS_SHORT[m]).join(' ') : '')}</td>
+  </tr>`;
+}
+function flagFor(a) {
+  if (a._isParent) return '';
+  if (a._justInactive) return '<span class="pill flag">JUST FLIPPED</span>';
+  if (a._recovered) return '<span class="pill" style="background:rgba(96,165,250,.18);color:var(--bl)">RECOVERED</span>';
+  return '';
+}
+
+function sortRows(rows) {
+  const key = STATE.sortKey, dir = STATE.sortDir==='desc'?-1:1;
+  const fns = {
+    id: a => a.id || '',
+    cat: a => (a.c||'') + (a.sc||''),
+    status: a => a._latestStatus,
+    latest_qty: a => a._latestQty,
+    spend_26: a => a._ytd26[0],
+    tsales_26: a => a._ytd26[4],
+    tsales_25: a => a._ytd25[4],
+    yoy_delta: a => a._yoyTSDelta,
+    roas_26: a => a._roas26,
+    orders_26: a => a._ytd26[1],
+    flag: a => (a.yi.length||0)+(a._justInactive?2:0)+(a._recovered?1:0),
+  };
+  const fn = fns[key] || fns.tsales_26;
+  return [...rows].sort((a,b) => {
+    const va = fn(a), vb = fn(b);
+    if (typeof va === 'string') return va.localeCompare(vb)*dir;
+    return (va-vb)*dir;
+  });
+}
+
+//==========================================================================
+// PARENT ROLLUP
+//==========================================================================
+function rollupParents(arr) {
+  const m = new Map();
+  for (const a of arr) {
+    const key = a.pa || a.id;
+    if (!m.has(key)) m.set(key, { id: key, pa: a.pa, c: a.c, sc: a.sc, o: a.o, t: a.t, _children: [], _isParent: true });
+    m.get(key)._children.push(a);
+  }
+  const out = [];
+  for (const p of m.values()) {
+    const children = p._children;
+    p._childCount = children.length;
+    p._activeCount = children.filter(c => c._latestStatus==='A').length;
+    p._latestStatus = p._activeCount === children.length ? 'A' : p._activeCount === 0 ? 'I' : 'M';
+    p._latestQty = children.reduce((s,c)=>s+c._latestQty, 0);
+    p._ytd26 = [0,0,0,0,0,0]; p._ytd25 = [0,0,0,0,0,0];
+    for (const c of children) for (let i=0;i<6;i++) { p._ytd26[i]+=c._ytd26[i]; p._ytd25[i]+=c._ytd25[i]; }
+    p._roas26 = p._ytd26[0]>0 ? p._ytd26[2]/p._ytd26[0] : 0;
+    p._yoyTSDelta = p._ytd26[4]-p._ytd25[4];
+    p._yoyTSPct = p._ytd25[4]>0 ? ((p._ytd26[4]-p._ytd25[4])/p._ytd25[4])*100 : null;
+    p.yi = [...new Set(children.flatMap(c => c.yi))];
+    // Build a parent-level heartbeat: for each week, "A" if all active, "I" if all inactive, "M" if mixed
+    const wkN = children[0].st.length;
+    let st = '';
+    for (let w=0;w<wkN;w++) {
+      let aN=0, iN=0;
+      for (const c of children) { const s=c.st[w]; if(s==='A')aN++; else if(s==='I')iN++; }
+      if (aN===children.length) st += 'A';
+      else if (iN===children.length) st += 'I';
+      else st += aN>=iN ? 'A' : 'I';
+    }
+    p.st = st;
+    out.push(p);
+  }
+  return out;
+}
+
+function setGrain(g) {
+  STATE.grain = g;
+  $$('.tb-toggle button').forEach(b => b.classList.toggle('active', b.dataset.grain === g));
+  STATE.page = 1;
+  refreshTable();
+}
+
+//==========================================================================
+// 3D CONSTELLATION
+//==========================================================================
+function build3DConstellation() {
+  const canvas = $('#constCanvas');
+  const tip = $('#constTip');
+  const w = canvas.parentElement.clientWidth, h = canvas.parentElement.clientHeight;
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0x050810, 80, 280);
+  const camera = new THREE.PerspectiveCamera(55, w/h, 0.1, 1000);
+  camera.position.set(0, 0, 130);
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(w, h, false);
+  renderer.setClearColor(0x000000, 0);
+
+  // Axis helpers — three colored lines from origin
+  const drawAxis = (start, end, color) => {
+    const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...start), new THREE.Vector3(...end)]);
+    return new THREE.Line(g, new THREE.LineBasicMaterial({color, transparent:true, opacity:.35}));
+  };
+  scene.add(drawAxis([-50,0,0], [50,0,0], 0x00e5c8));   // X cyan
+  scene.add(drawAxis([0,-30,0], [0,30,0], 0xff9f43));    // Y orange
+  scene.add(drawAxis([0,0,-50], [0,0,50], 0xa78bfa));    // Z purple
+
+  // Grid floor (subtle)
+  const grid = new THREE.GridHelper(120, 12, 0x1c2844, 0x0f1629);
+  grid.position.y = -30;
+  scene.add(grid);
+
+  // Build per-ASIN attributes: positions, colors, sizes
+  const positions = new Float32Array(DATA.asins.length * 3);
+  const colors = new Float32Array(DATA.asins.length * 3);
+  const sizes = new Float32Array(DATA.asins.length);
+  // Find min/max for log-normalization
+  const tsales = DATA.asins.map(a => a._ytd26[4]);
+  const spends = DATA.asins.map(a => a._ytd26[0]);
+  const sessions = DATA.asins.map(a => a._ytd26[3]);
+  const roases = DATA.asins.map(a => Math.min(a._roas26, 12));
+  const logCap = arr => Math.log10(Math.max(1, Math.max(...arr)));
+  const tsCap = logCap(tsales), spCap = logCap(spends), seCap = logCap(sessions);
+
+  const colMap = {
+    A_normal:    new THREE.Color(0x2ecc71),
+    A_yoyi:      new THREE.Color(0xff9f43),
+    I:           new THREE.Color(0xff5b5b),
+    A_just:      new THREE.Color(0xa78bfa),  // recently flipped
+    A_recov:     new THREE.Color(0x60a5fa),
+    U:           new THREE.Color(0x6b7fa3),
+  };
+
+  for (let i=0;i<DATA.asins.length;i++) {
+    const a = DATA.asins[i];
+    const x = (Math.log10(Math.max(1, a._ytd26[4])) / tsCap) * 100 - 50;
+    const y = (Math.min(a._roas26, 12) / 12) * 60 - 30;
+    const z = (Math.log10(Math.max(1, a._ytd26[0])) / spCap) * 100 - 50;
+    positions[i*3] = x; positions[i*3+1] = y; positions[i*3+2] = z;
+    let col;
+    if (a._latestStatus === 'I') col = colMap.I;
+    else if (a._justInactive) col = colMap.A_just;
+    else if (a._recovered) col = colMap.A_recov;
+    else if (a.yi && a.yi.length) col = colMap.A_yoyi;
+    else if (a._latestStatus === 'A') col = colMap.A_normal;
+    else col = colMap.U;
+    colors[i*3] = col.r; colors[i*3+1] = col.g; colors[i*3+2] = col.b;
+    const sz = (Math.log10(Math.max(1, a._ytd26[3])) / Math.max(1,seCap)) * 8 + 2;
+    sizes[i] = sz;
+  }
+
+  const geom = new THREE.BufferGeometry();
+  geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  geom.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+  // Circle texture for round points
+  const cTex = (() => {
+    const c = document.createElement('canvas'); c.width=64; c.height=64;
+    const cx = c.getContext('2d');
+    const grd = cx.createRadialGradient(32,32,0,32,32,32);
+    grd.addColorStop(0, 'rgba(255,255,255,1)');
+    grd.addColorStop(.55, 'rgba(255,255,255,.85)');
+    grd.addColorStop(1, 'rgba(255,255,255,0)');
+    cx.fillStyle = grd; cx.fillRect(0,0,64,64);
+    const t = new THREE.CanvasTexture(c);
+    return t;
+  })();
+
+  // Custom shader for per-point size + nice glow
+  const mat = new THREE.ShaderMaterial({
+    uniforms: { tex: { value: cTex } },
+    vertexShader: `
+      attribute float size;
+      varying vec3 vColor;
+      void main() {
+        vColor = color;
+        vec4 mv = modelViewMatrix * vec4(position, 1.);
+        gl_PointSize = size * (300.0 / -mv.z);
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: `
+      uniform sampler2D tex;
+      varying vec3 vColor;
+      void main() {
+        vec4 t = texture2D(tex, gl_PointCoord);
+        if (t.a < 0.05) discard;
+        gl_FragColor = vec4(vColor, t.a * .9);
+      }`,
+    vertexColors: true,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.NormalBlending,
+  });
+
+  const points = new THREE.Points(geom, mat);
+  scene.add(points);
+
+  // Hidden mesh for raycasting (cubes too — we'll use point cloud raycast with threshold)
+  const raycaster = new THREE.Raycaster();
+  raycaster.params.Points.threshold = 1.3;
+  const mouseV = new THREE.Vector2();
+  let hoverIdx = -1;
+
+  // ---- Orbit controls (lightweight, custom) ----
+  let phi = Math.PI/2.6, theta = Math.PI/3, radius = 130;
+  let isDragging = false, lastX, lastY;
+  let autoRotate = false;
+  function updateCamera() {
+    const x = radius * Math.sin(phi) * Math.cos(theta);
+    const y = radius * Math.cos(phi);
+    const z = radius * Math.sin(phi) * Math.sin(theta);
+    camera.position.set(x, y, z);
+    camera.lookAt(0, 0, 0);
+  }
+  updateCamera();
+
+  canvas.addEventListener('mousedown', e => { isDragging=true; lastX=e.clientX; lastY=e.clientY; canvas.classList.add('dragging'); });
+  window.addEventListener('mouseup', () => { isDragging=false; canvas.classList.remove('dragging'); });
+  window.addEventListener('mousemove', e => {
+    if (isDragging) {
+      const dx = e.clientX - lastX, dy = e.clientY - lastY;
+      theta -= dx * 0.005;
+      phi = Math.max(0.15, Math.min(Math.PI - 0.15, phi - dy * 0.005));
+      lastX = e.clientX; lastY = e.clientY;
+      updateCamera();
+    }
+  });
+  canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    radius = Math.max(40, Math.min(300, radius + e.deltaY * 0.1));
+    updateCamera();
+  }, {passive:false});
+
+  // Hover -> tooltip
+  canvas.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    mouseV.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    mouseV.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(mouseV, camera);
+    const intersects = raycaster.intersectObject(points);
+    if (intersects.length > 0) {
+      // Pick the visible one nearest the camera
+      const visibleSet = CONST_3D.visibleSet;
+      let pick = null;
+      for (const it of intersects) {
+        if (!visibleSet || visibleSet.has(it.index)) { pick = it; break; }
+      }
+      if (!pick) { tip.style.display='none'; hoverIdx=-1; return; }
+      hoverIdx = pick.index;
+      const a = DATA.asins[hoverIdx];
+      tip.innerHTML = `
+        <div class="tt-id">${a.id} <span class="pill ${a._latestStatus}">${a._latestStatus==='A'?'Act':'Inact'}</span></div>
+        <div class="tt-t">${(a.t||'').slice(0, 60)}${a.t&&a.t.length>60?'…':''}</div>
+        <div class="tt-row"><span>Cat</span><span>${a.c||'—'} / ${a.sc||'—'}</span></div>
+        <div class="tt-row"><span>T-Sales YTD</span><span>${F.k(a._ytd26[4])}</span></div>
+        <div class="tt-row"><span>Spend YTD</span><span>${F.k(a._ytd26[0])}</span></div>
+        <div class="tt-row"><span>ROAS</span><span>${a._roas26.toFixed(2)}x</span></div>
+        ${a.yi.length?`<div class="tt-row"><span style="color:var(--or)">YoY Inactive</span><span style="color:var(--or)">${a.yi.map(m=>MONTH_LABELS_SHORT[m]).join(', ')}</span></div>`:''}
+        <div class="tt-row" style="margin-top:4px;color:var(--cy)"><span>Click to open detail</span></div>
+      `;
+      tip.style.display = 'block';
+      tip.style.left = (e.clientX - rect.left + 14) + 'px';
+      tip.style.top = (e.clientY - rect.top + 14) + 'px';
+      // Clamp to canvas bounds
+      const ttR = tip.getBoundingClientRect();
+      if (ttR.right > rect.right) tip.style.left = (e.clientX - rect.left - ttR.width - 14) + 'px';
+    } else {
+      tip.style.display = 'none';
+      hoverIdx = -1;
+    }
+  });
+  canvas.addEventListener('mouseleave', () => { tip.style.display='none'; hoverIdx=-1; });
+  canvas.addEventListener('click', () => {
+    if (hoverIdx >= 0) openDrawer(DATA.asins[hoverIdx].id, false);
+  });
+
+  // Buttons
+  $('#rotBtn').addEventListener('click', () => {
+    autoRotate = !autoRotate;
+    $('#rotBtn').classList.toggle('active', autoRotate);
+  });
+  $('#resetBtn').addEventListener('click', () => {
+    phi = Math.PI/2.6; theta = Math.PI/3; radius = 130;
+    updateCamera();
+  });
+
+  // Resize
+  const resize = () => {
+    const w2 = canvas.parentElement.clientWidth, h2 = canvas.parentElement.clientHeight;
+    camera.aspect = w2/h2; camera.updateProjectionMatrix();
+    renderer.setSize(w2, h2, false);
+  };
+  window.addEventListener('resize', resize);
+
+  // Animate
+  let frameId;
+  const tick = () => {
+    if (autoRotate) { theta += 0.0025; updateCamera(); }
+    renderer.render(scene, camera);
+    frameId = requestAnimationFrame(tick);
+  };
+  tick();
+
+  CONST_3D = { scene, camera, renderer, points, geom, colors, sizes, basePositions: positions, visibleSet: null, baseColors: colors.slice() };
+}
+
+function refreshConstellation() {
+  if (!CONST_3D) return;
+  // Build a Set of visible indices from FILTERED
+  const visible = new Set();
+  for (const a of FILTERED) visible.add(DATA.asins.indexOf(a));
+  CONST_3D.visibleSet = visible;
+  // Adjust per-point alpha by zeroing color when not in filter (we use color = base * mask)
+  const colors = CONST_3D.geom.attributes.color.array;
+  const base = CONST_3D.baseColors;
+  const fadeR = 0.10, fadeG = 0.13, fadeB = 0.20;
+  for (let i = 0; i < DATA.asins.length; i++) {
+    if (visible.has(i)) {
+      colors[i*3] = base[i*3]; colors[i*3+1] = base[i*3+1]; colors[i*3+2] = base[i*3+2];
+    } else {
+      colors[i*3] = fadeR; colors[i*3+1] = fadeG; colors[i*3+2] = fadeB;
+    }
+  }
+  CONST_3D.geom.attributes.color.needsUpdate = true;
+  $('#constInfo').innerHTML = `Showing <b>${visible.size.toLocaleString()}</b> / ${DATA.summary.total.toLocaleString()} ASINs`;
+}
+
+//==========================================================================
+// DRAWER
+//==========================================================================
+function openDrawer(id, isParent) {
+  let a;
+  if (isParent) {
+    // Build parent rollup on the fly
+    const children = DATA.asins.filter(x => (x.pa || x.id) === id);
+    const rolled = rollupParents(children)[0];
+    a = rolled;
+  } else {
+    a = DATA.asins.find(x => x.id === id);
+  }
+  if (!a) return;
+
+  const drwr = $('#drwr');
+  drwr.innerHTML = drawerHTML(a, isParent);
+  drwr.classList.add('open');
+  $('#drwrBg').classList.add('open');
+  drwr.scrollTo({top:0});
+  // Build qty sparkline
+  setTimeout(() => buildQtySpark(a), 50);
+}
+function closeDrawer() {
+  $('#drwr').classList.remove('open');
+  $('#drwrBg').classList.remove('open');
+}
+$('#drwrBg').addEventListener('click', closeDrawer);
+
+function drawerHTML(a, isParent) {
+  // Build heartbeat with hover info
+  const hb = a.st.split('').map((s, i) => {
+    const d = DATA.meta.status_dates[i];
+    const q = a.q[i];
+    return `<div class="hb-l-cell ${s}" data-d="${d}" data-q="qty: ${q}"></div>`;
+  }).join('');
+
+  // Per-month YoY table
+  const monthRows = MONTH_KEYS.map(m => {
+    const v26 = a.b[m+'26'] || [0,0,0,0,0,0];
+    const v25 = a.b[m+'25'] || [0,0,0,0,0,0];
+    const flag = a.yi.includes(m);
+    const td = (c, p) => {
+      if (p === 0 && c === 0) return '<td>—</td>';
+      const d = F.dp(c, p); return `<td>${F.k0(c)} <span class="delta ${d.c}">${d.t}</span></td>`;
+    };
+    const tdN = (c, p) => {
+      if (p === 0 && c === 0) return '<td>—</td>';
+      const d = F.dp(c, p); return `<td>${F.n(c)} <span class="delta ${d.c}">${d.t}</span></td>`;
+    };
+    return `<tr class="${flag?'yoyi-row':''}"><td>${MONTH_LABELS[m]}${flag?' <span class="pill flag">YoYi</span>':''}</td>${td(v26[0],v25[0])}${tdN(v26[1],v25[1])}${td(v26[2],v25[2])}${tdN(v26[3],v25[3])}${td(v26[4],v25[4])}${tdN(v26[5],v25[5])}</tr>`;
+  }).join('');
+
+  // YTD
+  const ytd = (c, p) => `<td>${F.k0(c)} <span class="delta ${F.dp(c,p).c}">${F.dp(c,p).t}</span></td>`;
+  const ytdN = (c, p) => `<td>${F.n(c)} <span class="delta ${F.dp(c,p).c}">${F.dp(c,p).t}</span></td>`;
+
+  // Parent siblings panel (only if not a parent rollup view, and has parent)
+  let siblingsHTML = '';
+  if (!isParent && a.pa) {
+    const sibs = DATA.asins.filter(x => x.pa === a.pa && x.id !== a.id).slice(0, 12);
+    if (sibs.length) {
+      siblingsHTML = `<div class="drwr-sec"><h4>Parent Family · ${a.pa} (${sibs.length+1} children)</h4>
+        <table class="yoy-tbl"><thead><tr><th>Child ASIN</th><th>Status</th><th>T-Sales YTD</th><th>Spend YTD</th><th>ROAS</th></tr></thead>
+        <tbody>${sibs.map(s => `<tr><td><a style="color:var(--cy);cursor:pointer;text-decoration:underline" onclick="openDrawer('${s.id}',false)">${s.id}</a></td><td><span class="pill ${s._latestStatus}">${s._latestStatus==='A'?'Act':'Inact'}</span></td><td>${F.k(s._ytd26[4])}</td><td>${F.k(s._ytd26[0])}</td><td>${s._roas26.toFixed(2)}x</td></tr>`).join('')}</tbody></table></div>`;
+    }
+  }
+
+  return `
+    <div class="drwr-h">
+      <div>
+        <div class="id">${a.id} ${isParent?'<span class="pa">parent rollup · '+a._childCount+' children</span>':a.pa?`<span class="pa">parent: ${a.pa}</span>`:''}</div>
+        <div class="ttl">${a.t || '—'}</div>
+        <div class="meta">
+          <span class="pill ${a._latestStatus}">${a._latestStatus==='A'?'Active':'Inactive'}</span>
+          ${a.yi&&a.yi.length?`<span class="pill flag">YoYi: ${a.yi.map(m=>MONTH_LABELS_SHORT[m]).join(', ')}</span>`:''}
+          ${a._justInactive?'<span class="pill flag">Just Flipped</span>':''}
+          ${a._recovered?'<span class="pill" style="background:rgba(96,165,250,.18);color:var(--bl)">Recovered</span>':''}
+          · ${a.c || ''} / ${a.sc || ''} · ${a.f || '—'} · ${a.o || '—'}
+        </div>
+      </div>
+      <button class="drwr-close" onclick="closeDrawer()">×</button>
+    </div>
+    <div class="drwr-b">
+      <div class="drwr-sec">
+        <h4>YTD Headline · 2026 vs 2025</h4>
+        <table class="yoy-tbl"><thead><tr><th></th><th>Spend</th><th>Paid Orders</th><th>Ad Sales</th><th>Sessions</th><th>T-Sales</th><th>T-Orders</th></tr></thead>
+        <tbody><tr><td><b>YTD '26</b></td>${ytd(a._ytd26[0],a._ytd25[0])}${ytdN(a._ytd26[1],a._ytd25[1])}${ytd(a._ytd26[2],a._ytd25[2])}${ytdN(a._ytd26[3],a._ytd25[3])}${ytd(a._ytd26[4],a._ytd25[4])}${ytdN(a._ytd26[5],a._ytd25[5])}</tr>
+        <tr><td><b style="color:var(--t3)">YTD '25</b></td><td style="color:var(--t3)">${F.k0(a._ytd25[0])}</td><td style="color:var(--t3)">${F.n(a._ytd25[1])}</td><td style="color:var(--t3)">${F.k0(a._ytd25[2])}</td><td style="color:var(--t3)">${F.n(a._ytd25[3])}</td><td style="color:var(--t3)">${F.k0(a._ytd25[4])}</td><td style="color:var(--t3)">${F.n(a._ytd25[5])}</td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="drwr-sec">
+        <h4>Monthly Breakdown · 2026 vs 2025</h4>
+        <table class="yoy-tbl"><thead><tr><th>Month</th><th>Spend</th><th>Paid Ord</th><th>Ad Sales</th><th>Sessions</th><th>T-Sales</th><th>T-Orders</th></tr></thead>
+        <tbody>${monthRows}</tbody></table>
+      </div>
+
+      <div class="drwr-sec">
+        <h4>Status Heartbeat · 18-Week</h4>
+        <div class="hb-large">${hb}</div>
+        <div style="font:500 9px var(--mo);color:var(--t3);margin-top:8px">First week: ${DATA.meta.status_dates[0]} · Latest: ${DATA.meta.status_dates[DATA.meta.status_dates.length-1]}</div>
+      </div>
+
+      <div class="drwr-sec">
+        <h4>Inventory Qty · 18-Week</h4>
+        <div class="qty-spark"><canvas id="qtySpark"></canvas></div>
+      </div>
+
+      ${!isParent ? `<div class="drwr-sec">
+        <h4>Master Attributes</h4>
+        <div class="attr-grid">
+          <div class="attr-row"><span class="al">Child ASIN</span><span class="av">${a.id}</span></div>
+          <div class="attr-row"><span class="al">Parent ASIN</span><span class="av">${a.pa||'—'}</span></div>
+          <div class="attr-row"><span class="al">Seller SKU</span><span class="av">${a.ss||'—'}</span></div>
+          <div class="attr-row"><span class="al">Internal SKU</span><span class="av">${a.sk||'—'}</span></div>
+          <div class="attr-row"><span class="al">Parent SKU</span><span class="av">${a.ps||'—'}</span></div>
+          <div class="attr-row"><span class="al">Category</span><span class="av">${a.c||'—'}</span></div>
+          <div class="attr-row"><span class="al">Subcategory</span><span class="av">${a.sc||'—'}</span></div>
+          <div class="attr-row"><span class="al">Ownership</span><span class="av">${a.o||'—'}</span></div>
+          <div class="attr-row"><span class="al">Fulfillment</span><span class="av">${a.f||'—'}</span></div>
+          <div class="attr-row"><span class="al">Price</span><span class="av">$${a.p?a.p.toFixed(2):'—'}</span></div>
+          <div class="attr-row"><span class="al">Listed Date</span><span class="av">${a.od||'—'} ${a._daysOpen?`(${a._daysOpen}d)`:''}</span></div>
+          <div class="attr-row"><span class="al">Remark</span><span class="av">${a.r||'—'}</span></div>
+        </div>
+      </div>` : ''}
+
+      ${siblingsHTML}
+    </div>
+  `;
+}
+
+function buildQtySpark(a) {
+  const cv = $('#qtySpark');
+  if (!cv) return;
+  // simple line chart
+  new Chart(cv, {
+    type: 'line',
+    data: {
+      labels: DATA.meta.qty_dates.map(d => d.slice(5)),
+      datasets: [{
+        data: a.q,
+        borderColor: '#00e5c8',
+        backgroundColor: 'rgba(0,229,200,.12)',
+        tension: .25,
+        fill: true,
+        pointRadius: 2.5,
+        pointBackgroundColor: a.q.map(v => v===0?'#ff5b5b':'#00e5c8'),
+        borderWidth: 1.8,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{display:false}, tooltip:{backgroundColor:'#1a2440',titleColor:'#eef2ff',bodyColor:'#b0bfe0',padding:8,titleFont:{family:'JetBrains Mono'},bodyFont:{family:'JetBrains Mono',size:10}} },
+      scales: {
+        x: { ticks:{color:'#6b7fa3',font:{family:'JetBrains Mono',size:8}}, grid:{display:false} },
+        y: { ticks:{color:'#6b7fa3',font:{family:'JetBrains Mono',size:8},callback:v=>v>=1000?(v/1000).toFixed(0)+'K':v}, grid:{color:'#1c284422'} }
+      }
+    }
+  });
+}
+
+//==========================================================================
+// FILTER MODAL UI
+//==========================================================================
+function openFilterModal() { renderConditions(); renderSavedList(); $('#filterModal').classList.add('open'); }
+function closeFilterModal() { $('#filterModal').classList.remove('open'); }
+function clearAllConditions() { STATE.conditions = []; $$('.tb-preset').forEach(b => b.classList.remove('active')); $$('.yc').forEach(c => c.classList.remove('active')); applyFilters(); renderConditions(); }
+function applyConditions() { applyFilters(); closeFilterModal(); }
+
+function renderConditions() {
+  const list = $('#condList');
+  if (!list) return;
+  if (!STATE.conditions.length) {
+    list.innerHTML = `<div style="background:var(--cd2);border:1px dashed var(--bd);border-radius:8px;padding:20px;text-align:center;color:var(--t3);font:500 11px var(--mo);margin-bottom:7px">No conditions — click + Add Filter or pick a preset below</div>`;
+    refreshFilterCount();
+    return;
+  }
+  list.innerHTML = STATE.conditions.map((c, i) => {
+    const def = METRIC_DEFS[c.metric];
+    const periodLbl = def && def.noPeriod ? '' : `<span class="cond-period">in ${periodLabel(c.period)}</span>`;
+    return `<div class="cond-row">
+      <div class="cond-num">${i+1}</div>
+      <div class="cond-metric">${def?def.label:c.metric}</div>
+      <div class="cond-op">${c.op}</div>
+      <div class="cond-val">${c.val}</div>
+      ${periodLbl}
+      <button class="cond-x" onclick="removeCondition(${i})">×</button>
+    </div>`;
+  }).join('');
+  refreshFilterCount();
+}
+
+function removeCondition(i) {
+  const c = STATE.conditions[i];
+  if (c && c._presetId) $$('.tb-preset').forEach(b => b.classList.toggle('active', false));
+  STATE.conditions.splice(i,1);
+  renderConditions();
+  applyFilters();
+}
+
+// ----- Add Condition mini-modal -----
+function openAddCondModal() {
+  // Populate metric dropdown
+  $('#acMetric').innerHTML = Object.entries(METRIC_DEFS).map(([k,v]) => `<option value="${k}">${v.label}</option>`).join('');
+  $('#acOp').innerHTML = '';
+  $('#acVal').value = '';
+  $('#acPeriod').innerHTML = PERIOD_OPTS.map(p => `<option value="${p.id}">${p.label}</option>`).join('');
+  updateAcOpForMetric();
+  $('#acMetric').addEventListener('change', updateAcOpForMetric);
+  $('#addCondModal').classList.add('open');
+}
+function updateAcOpForMetric() {
+  const k = $('#acMetric').value;
+  const def = METRIC_DEFS[k];
+  if (!def) return;
+  if (def.type === 'sel') {
+    $('#acOp').innerHTML = `<option value="=">=</option><option value="!=">≠</option>`;
+    const opts = typeof def.options === 'function' ? def.options() : def.options;
+    $('#acVal').outerHTML = `<select id="acVal" style="background:var(--sf);border:1px solid var(--bd);color:var(--t1);padding:9px 12px;border-radius:6px;font:500 12px var(--mo);outline:none;width:100%;">${opts.map(o=>`<option>${o}</option>`).join('')}</select>`;
+  } else {
+    $('#acOp').innerHTML = `<option>></option><option>>=</option><option><</option><option><=</option><option>=</option><option>!=</option>`;
+    $('#acVal').outerHTML = `<input id="acVal" placeholder="e.g., 1.5" style="background:var(--sf);border:1px solid var(--bd);color:var(--t1);padding:9px 12px;border-radius:6px;font:500 12px var(--mo);outline:none;width:100%;">`;
+  }
+  $('#acPeriodRow').style.display = def.noPeriod ? 'none' : 'grid';
+}
+function closeAddCondModal() { $('#addCondModal').classList.remove('open'); }
+function saveNewCondition() {
+  const metric = $('#acMetric').value;
+  const def = METRIC_DEFS[metric];
+  const op = $('#acOp').value;
+  const valEl = $('#acVal');
+  let val = valEl.tagName === 'SELECT' ? valEl.value : (def.type==='num' ? parseFloat(valEl.value) : valEl.value);
+  if (def.type === 'num' && isNaN(val)) { valEl.style.borderColor = 'var(--rd)'; return; }
+  const period = def.noPeriod ? 'na' : $('#acPeriod').value;
+  STATE.conditions.push({ id: 'c_'+Date.now(), metric, op, val, period });
+  closeAddCondModal();
+  renderConditions();
+}
+
+//==========================================================================
+// SAVED PRESETS (localStorage)
+//==========================================================================
+function loadSavedPresets() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+  catch (e) { return []; }
+}
+function saveSavedPresets(arr) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); } catch (e) {}
+}
+function renderSavedList() {
+  const list = loadSavedPresets();
+  const el = $('#savedList');
+  if (!el) return;
+  if (!list.length) {
+    el.classList.remove('has-items');
+    el.innerHTML = 'No saved presets yet';
+    return;
+  }
+  el.classList.add('has-items');
+  el.innerHTML = list.map((p,i) => `<div class="saved-item">
+    <div><span class="saved-item-name">${p.name}</span> <span style="color:var(--t3);font:500 10px var(--mo)">· ${p.conds.length} conditions</span></div>
+    <div class="saved-item-actions">
+      <button class="saved-act apply" onclick="applySavedPreset(${i})">Apply</button>
+      <button class="saved-act del" onclick="deleteSavedPreset(${i})">Delete</button>
+    </div>
+  </div>`).join('');
+}
+function saveCurrentPreset() {
+  const name = $('#saveName').value.trim();
+  if (!name) { $('#saveName').style.borderColor = 'var(--rd)'; return; }
+  if (!STATE.conditions.length) { return; }
+  const list = loadSavedPresets();
+  list.push({ name, conds: STATE.conditions.map(c => ({...c})) });
+  saveSavedPresets(list);
+  $('#saveName').value = '';
+  renderSavedList();
+}
+function applySavedPreset(i) {
+  const list = loadSavedPresets();
+  if (!list[i]) return;
+  STATE.conditions = list[i].conds.map(c => ({...c}));
+  applyFilters(); renderConditions();
+}
+function deleteSavedPreset(i) {
+  const list = loadSavedPresets();
+  list.splice(i,1);
+  saveSavedPresets(list);
+  renderSavedList();
+}
+
+//==========================================================================
+// DATE / MONTH MODAL
+//==========================================================================
+function openDateModal() {
+  // Build month grids
+  const mkCell = (mkey, isCompare) => {
+    const yr = isCompare ? '2025' : '2026';
+    const sel = STATE.primaryMonths.includes(mkey);
+    return `<div class="dm-cell ${sel?(isCompare?'compare':'selected'):''}" data-mkey="${mkey}" data-compare="${isCompare?1:0}" onclick="toggleDateCell('${mkey}', ${isCompare?'true':'false'})">
+      ${MONTH_LABELS[mkey]}<span class="dm-y">${yr}</span>
+    </div>`;
+  };
+  $('#dmPrimary').innerHTML = MONTH_KEYS.map(m => mkCell(m, false)).join('');
+  $('#dmCompare').innerHTML = MONTH_KEYS.map(m => mkCell(m, true)).join('');
+
+  // Quick picks
+  $('#dmQuick').innerHTML = `
+    <button class="${arrEq(STATE.primaryMonths,['jan','feb','mar','apr'])?'active':''}" onclick="setQuickPeriod(['jan','feb','mar','apr'])">YTD (Jan→Apr)</button>
+    <button class="${arrEq(STATE.primaryMonths,['jan'])?'active':''}" onclick="setQuickPeriod(['jan'])">January only</button>
+    <button class="${arrEq(STATE.primaryMonths,['feb'])?'active':''}" onclick="setQuickPeriod(['feb'])">February only</button>
+    <button class="${arrEq(STATE.primaryMonths,['mar'])?'active':''}" onclick="setQuickPeriod(['mar'])">March only</button>
+    <button class="${arrEq(STATE.primaryMonths,['apr'])?'active':''}" onclick="setQuickPeriod(['apr'])">April only</button>
+    <button class="${arrEq(STATE.primaryMonths,['mar','apr'])?'active':''}" onclick="setQuickPeriod(['mar','apr'])">Last 2 months</button>
+    <button class="${arrEq(STATE.primaryMonths,['feb','mar','apr'])?'active':''}" onclick="setQuickPeriod(['feb','mar','apr'])">Last 3 months</button>
+  `;
+  updateDmStatus();
+  $('#dateModal').classList.add('open');
+}
+function arrEq(a,b) { if (a.length!==b.length) return false; for (let i=0;i<a.length;i++) if (a[i]!==b[i]) return false; return true; }
+function closeDateModal() { $('#dateModal').classList.remove('open'); }
+function toggleDateCell(mkey, isCompare) {
+  if (STATE.primaryMonths.includes(mkey)) {
+    if (STATE.primaryMonths.length > 1) STATE.primaryMonths = STATE.primaryMonths.filter(m => m !== mkey);
+  } else {
+    STATE.primaryMonths.push(mkey);
+    STATE.primaryMonths.sort((a,b) => MONTH_KEYS.indexOf(a)-MONTH_KEYS.indexOf(b));
+  }
+  // Re-render the grids reflecting current state
+  openDateModal();
+}
+function setQuickPeriod(months) {
+  STATE.primaryMonths = months.slice();
+  openDateModal();
+}
+function updateDmStatus() {
+  const lbl = STATE.primaryMonths.map(m => MONTH_LABELS_SHORT[m]).join(', ');
+  $('#dmStatus').innerHTML = `Selected: <b style="color:var(--cy)">${lbl} 2026</b> vs <b style="color:var(--or)">${lbl} 2025</b> (day-of-week aligned)`;
+}
+function applyDateRange() {
+  // Re-enrich since YTD totals depend on selected months
+  for (const a of DATA.asins) {
+    a._ytd26 = sumBiz(a, STATE.primaryMonths, '26');
+    a._ytd25 = sumBiz(a, STATE.primaryMonths, '25');
+    a._roas26 = a._ytd26[0] > 0 ? a._ytd26[2] / a._ytd26[0] : 0;
+    a._roas25 = a._ytd25[0] > 0 ? a._ytd25[2] / a._ytd25[0] : 0;
+    a._yoyTSDelta = a._ytd26[4] - a._ytd25[4];
+    a._yoyTSPct = a._ytd25[4] > 0 ? ((a._ytd26[4]-a._ytd25[4])/a._ytd25[4])*100 : null;
+  }
+  // Update header label
+  const lbl = STATE.primaryMonths.length === 4 ? 'YTD (Jan–Apr)' : STATE.primaryMonths.map(m => MONTH_LABELS_SHORT[m]).join('+');
+  $('#dateBtnLabel').textContent = lbl;
+  applyFilters();
+  closeDateModal();
+}
+
+//==========================================================================
+// BOOT
+//==========================================================================
+init();
+</script>
+</body>
+</html>
