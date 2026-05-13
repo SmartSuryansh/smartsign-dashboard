@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartSign — ASIN Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#080c14;--cd:#0f1629;--cd2:#131b30;--hv:#1a2440;--sf:#0a0f1c;--bd:#1c2844;--bd2:#2a3a5c;--t1:#eef2ff;--t2:#b0bfe0;--t3:#6b7fa3;--tw:#fff;--cy:#00e5c8;--or:#ff9f43;--rd:#ff5b5b;--gn:#2ecc71;--pu:#a78bfa;--yl:#f1c40f;--bl:#60a5fa;--mo:'JetBrains Mono',monospace;--sa:'DM Sans',sans-serif;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{background:var(--bg);color:var(--t1);font-family:var(--sa);min-height:100vh;}
+body{overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 30%,rgba(167,139,250,.05),transparent 60%),radial-gradient(ellipse at 80% 70%,rgba(0,229,200,.04),transparent 60%);pointer-events:none;z-index:0;}
+.w{max-width:1500px;margin:0 auto;padding:24px 28px;position:relative;z-index:1;}
+.hdr{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;padding-bottom:18px;border-bottom:1px solid var(--bd);gap:20px;}
+.hdr-l .cr{font:600 10px/1 var(--mo);letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:10px;}
+.hdr-l .cr a{color:var(--cy);text-decoration:none;}
+.hdr-l .cr a:hover{text-decoration:underline;}
+.hdr-l h1{font:800 32px/1.1 var(--mo);background:linear-gradient(135deg,var(--pu),var(--cy));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hdr-l .sub{font:500 12px/1.4 var(--mo);color:var(--t3);margin-top:6px;max-width:600px;}
+.hdr-r{font:500 11px/1.4 var(--mo);color:var(--t3);text-align:right;flex-shrink:0;}
+.hdr-r b{color:var(--cy);font-weight:700;}
+.hero{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px;}
+.hc{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:20px 18px;position:relative;overflow:hidden;transition:all .25s;}
+.hc:hover{border-color:var(--cy);transform:translateY(-2px);}
+.hc::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:14px 0 0 14px;}
+.hc.c1::before{background:var(--cy);}.hc.c2::before{background:var(--gn);}.hc.c3::before{background:var(--rd);}.hc.c4::before{background:var(--or);}.hc.c5::before{background:var(--pu);}
+.hc .lb{font:600 9px/1 var(--mo);letter-spacing:1.6px;text-transform:uppercase;color:var(--t3);margin-bottom:9px;}
+.hc .vl{font:800 26px/1 var(--mo);color:var(--tw);}
+.hc .dt{font:500 11px/1.4 var(--mo);color:var(--t2);margin-top:7px;}
+.up{color:var(--gn)!important;}.dn{color:var(--rd)!important;}.wn{color:var(--or)!important;}.in{color:var(--cy)!important;}.pu{color:var(--pu)!important;}
+.sc{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:22px;margin-bottom:22px;}
+.sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+.st{font:700 12px/1 var(--mo);letter-spacing:1.2px;text-transform:uppercase;color:var(--t2);display:flex;align-items:center;gap:10px;}
+.st .stb{font:500 10px/1.4 var(--mo);color:var(--t3);text-transform:none;letter-spacing:0;}
+.const-wrap{position:relative;height:640px;background:radial-gradient(ellipse at center,#0a1428 0%,#04060d 75%);border-radius:14px;overflow:hidden;border:1px solid var(--bd2);box-shadow:inset 0 0 80px rgba(0,0,0,.4);}
+#constCanvas{display:block;width:100%;height:100%;cursor:grab;outline:none;}
+#constCanvas.dragging{cursor:grabbing;}
+.const-topbar{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(8,12,20,.9);backdrop-filter:blur(10px);padding:8px 14px;border-radius:30px;border:1px solid var(--bd);display:flex;gap:6px;z-index:5;}
+.const-topbar button{font:600 10px/1 var(--mo);letter-spacing:.8px;text-transform:uppercase;background:transparent;border:none;color:var(--t2);padding:7px 12px;border-radius:20px;cursor:pointer;transition:all .2s;}
+.const-topbar button:hover{color:var(--cy);}
+.const-topbar button.active{background:rgba(0,229,200,.15);color:var(--cy);box-shadow:0 0 12px rgba(0,229,200,.2);}
+.const-controls{position:absolute;top:14px;right:14px;display:flex;flex-direction:column;gap:6px;z-index:5;}
+.const-btn{font:600 10px/1 var(--mo);letter-spacing:1px;text-transform:uppercase;background:rgba(8,12,20,.9);backdrop-filter:blur(10px);color:var(--t2);border:1px solid var(--bd);padding:8px 12px;border-radius:8px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px;min-width:120px;}
+.const-btn:hover{border-color:var(--cy);color:var(--cy);}
+.const-btn.active{background:rgba(0,229,200,.12);border-color:var(--cy);color:var(--cy);}
+.const-btn .ico{font-size:13px;}
+.const-axis{position:absolute;font:700 10px/1.3 var(--mo);letter-spacing:1px;text-transform:uppercase;color:var(--t2);background:rgba(8,12,20,.85);backdrop-filter:blur(8px);padding:6px 10px;border-radius:6px;border:1px solid var(--bd);z-index:5;}
+.const-axis .ax{font-weight:800;display:inline-block;margin-right:6px;}
+.const-axis .ax.x{color:var(--cy);}.const-axis .ax.y{color:var(--or);}.const-axis .ax.z{color:var(--pu);}
+.const-axis-x{top:14px;left:14px;}.const-axis-y{top:60px;left:14px;}.const-axis-z{top:106px;left:14px;}
+.const-legend{position:absolute;bottom:14px;left:14px;background:rgba(8,12,20,.92);backdrop-filter:blur(10px);padding:12px 14px;border-radius:10px;border:1px solid var(--bd);display:flex;flex-direction:column;gap:6px;z-index:5;}
+.const-leg-title{font:700 9px/1 var(--mo);letter-spacing:1.2px;text-transform:uppercase;color:var(--t3);margin-bottom:4px;}
+.const-leg-item{display:flex;align-items:center;gap:8px;font:500 10px/1 var(--mo);color:var(--t2);}
+.const-leg-dot{width:10px;height:10px;border-radius:50%;box-shadow:0 0 8px currentColor;flex-shrink:0;}
+.const-leg-sep{height:1px;background:var(--bd);margin:6px 0 4px;}
+.const-leg-meta{font:500 9px/1.4 var(--mo);color:var(--t3);}
+.const-info{position:absolute;bottom:14px;right:14px;background:rgba(8,12,20,.92);backdrop-filter:blur(10px);padding:12px 16px;border-radius:10px;border:1px solid var(--bd);font:500 10px/1.4 var(--mo);color:var(--t2);z-index:5;text-align:right;}
+.const-info b{color:var(--cy);font-weight:700;font-size:13px;display:block;}
+.const-info .si{color:var(--t3);font-size:9px;margin-top:4px;}
+.const-tooltip{position:absolute;background:linear-gradient(135deg,#0c1428,#0a1020);border:1px solid var(--cy);border-radius:10px;padding:12px 14px;font:500 11px/1.4 var(--mo);color:var(--t1);pointer-events:none;display:none;max-width:300px;box-shadow:0 8px 28px rgba(0,0,0,.7),0 0 20px rgba(0,229,200,.2);z-index:100;}
+.const-tooltip .tt-id{color:var(--cy);font-weight:800;margin-bottom:4px;font-size:12px;}
+.const-tooltip .tt-t{color:var(--t2);font-size:10px;margin-bottom:8px;line-height:1.4;}
+.const-tooltip .tt-row{display:flex;justify-content:space-between;gap:14px;font-size:10px;padding:1px 0;}
+.const-tooltip .tt-row span:first-child{color:var(--t3);}
+.const-tooltip .tt-cta{margin-top:8px;padding-top:6px;border-top:1px dashed var(--bd);font-size:9px;color:var(--cy);text-align:center;}
+.const-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(8,12,20,.6);z-index:6;font:500 12px var(--mo);color:var(--t2);transition:opacity .3s;}
+.const-loading.hidden{opacity:0;pointer-events:none;}
+.const-loading .pulse{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--cy);margin-right:10px;animation:pulse 1s ease-in-out infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.5);opacity:.5;}}
+.yoyi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.yc{background:var(--cd2);border:1px solid var(--bd);border-radius:12px;padding:18px;transition:all .2s;cursor:pointer;}
+.yc:hover{border-color:var(--or);transform:translateY(-2px);}
+.yc.active{border-color:var(--or);background:rgba(255,159,67,.08);box-shadow:0 0 24px rgba(255,159,67,.15);}
+.yc .ym{font:700 13px/1 var(--mo);color:var(--or);margin-bottom:12px;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;}
+.yc .ym .ycn{font:800 22px/1 var(--mo);color:var(--tw);}
+.yc .yr{display:flex;justify-content:space-between;font:500 11px/1.3 var(--mo);padding:5px 0;border-bottom:1px dashed #1c284455;}
+.yc .yr:last-child{border-bottom:none;}
+.yc .yr .yl{color:var(--t3);}.yc .yr .yv{color:var(--t1);font-weight:600;}
+.yc .yr .yd{font-weight:700;font-size:10px;margin-left:6px;}
+.yc .yd-bd{font:500 9px/1.4 var(--mo);color:var(--t3);margin-top:10px;padding-top:10px;border-top:1px solid var(--bd);}
+.tb{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:18px;}
+.tb-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.tb-row + .tb-row{margin-top:10px;padding-top:10px;border-top:1px dashed #1c284466;}
+.tb-search{flex:1;min-width:260px;background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:10px 14px;font:500 13px var(--mo);color:var(--t1);outline:none;}
+.tb-search:focus{border-color:var(--cy);}
+.tb-btn{font:600 11px/1 var(--mo);letter-spacing:1px;text-transform:uppercase;background:var(--sf);border:1px solid var(--bd);color:var(--t2);padding:10px 14px;border-radius:8px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+.tb-btn:hover{border-color:var(--cy);color:var(--cy);}
+.tb-btn.active{background:rgba(0,229,200,.1);border-color:var(--cy);color:var(--cy);}
+.tb-btn .bdg{background:var(--cy);color:#000;border-radius:4px;font:700 9px/1 var(--mo);padding:3px 5px;}
+.tb-btn.export{background:rgba(46,204,113,.05);border-color:rgba(46,204,113,.3);color:var(--gn);}
+.tb-btn.export:hover{background:rgba(46,204,113,.12);border-color:var(--gn);}
+.tb-toggle{display:flex;background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:3px;}
+.tb-toggle button{font:600 10px/1 var(--mo);letter-spacing:1px;text-transform:uppercase;background:none;border:none;color:var(--t3);padding:7px 12px;border-radius:6px;cursor:pointer;}
+.tb-toggle button.active{background:var(--cy);color:#000;}
+.tb-presets{display:flex;flex-wrap:wrap;gap:7px;flex:1;}
+.tb-preset{font:600 10px/1 var(--mo);letter-spacing:.5px;background:transparent;border:1px solid var(--bd);color:var(--t2);padding:7px 10px;border-radius:6px;cursor:pointer;}
+.tb-preset:hover{border-color:var(--pu);color:var(--pu);}
+.tb-preset.active{background:rgba(167,139,250,.12);border-color:var(--pu);color:var(--pu);}
+.tb-status{font:500 11px/1.3 var(--mo);color:var(--t3);text-align:right;}
+.tb-status b{color:var(--cy);}
+.tw{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-family:var(--mo);}
+thead th{padding:11px 10px;text-align:right;font:700 9px/1 var(--mo);text-transform:uppercase;letter-spacing:.8px;color:var(--t3);border-bottom:2px solid var(--bd2);white-space:nowrap;cursor:pointer;user-select:none;}
+thead th:first-child,thead th.lf{text-align:left;}
+thead th:hover{color:var(--cy);}
+thead th .sortarrow{color:var(--cy);margin-left:3px;font-size:8px;}
+tbody td{padding:9px 10px;text-align:right;font:500 11px/1.2 var(--mo);color:var(--t2);border-bottom:1px solid #1c284422;white-space:nowrap;}
+tbody td:first-child,tbody td.lf{text-align:left;}
+tbody tr{cursor:pointer;transition:background .12s;}
+tbody tr:hover{background:var(--hv);}
+.row-id{color:var(--cy);font-weight:600;}
+.row-title{color:var(--t1);font-weight:500;font-size:10px;max-width:280px;overflow:hidden;text-overflow:ellipsis;display:inline-block;vertical-align:middle;}
+.row-cat{color:var(--t3);font-size:10px;}
+.hb{display:inline-flex;gap:1.5px;vertical-align:middle;}
+.hb-cell{width:5px;height:14px;border-radius:1px;background:var(--bd);}
+.hb-cell.A{background:var(--gn);}.hb-cell.I{background:var(--rd);}.hb-cell.U{background:#1c2844;}
+.pill{display:inline-block;font:700 9px/1 var(--mo);letter-spacing:.5px;padding:3px 6px;border-radius:4px;text-transform:uppercase;}
+.pill.A{background:rgba(46,204,113,.18);color:var(--gn);}
+.pill.I{background:rgba(255,91,91,.18);color:var(--rd);}
+.pill.U{background:rgba(107,127,163,.18);color:var(--t3);}
+.pill.flag{background:rgba(255,159,67,.18);color:var(--or);margin-left:4px;}
+.pg{display:flex;justify-content:space-between;align-items:center;margin-top:14px;flex-wrap:wrap;gap:10px;}
+.pg-info{font:500 11px/1 var(--mo);color:var(--t3);}
+.pg-info b{color:var(--cy);}
+.pg-ctrls{display:flex;gap:5px;align-items:center;}
+.pg-ctrls button{font:600 11px/1 var(--mo);background:var(--sf);border:1px solid var(--bd);color:var(--t2);padding:7px 11px;border-radius:6px;cursor:pointer;min-width:32px;}
+.pg-ctrls button:hover:not(:disabled){border-color:var(--cy);color:var(--cy);}
+.pg-ctrls button.active{background:var(--cy);color:#000;border-color:var(--cy);}
+.pg-ctrls button:disabled{opacity:.3;cursor:not-allowed;}
+.pg-ctrls select{background:var(--sf);border:1px solid var(--bd);color:var(--t2);padding:7px 11px;border-radius:6px;font:600 10px var(--mo);cursor:pointer;}
+.drwr-bg{position:fixed;inset:0;background:rgba(5,8,16,.7);backdrop-filter:blur(4px);z-index:200;opacity:0;pointer-events:none;transition:opacity .25s;}
+.drwr-bg.open{opacity:1;pointer-events:auto;}
+.drwr{position:fixed;top:0;right:-100%;width:780px;max-width:100vw;height:100vh;background:var(--cd);border-left:1px solid var(--bd2);z-index:201;overflow-y:auto;transition:right .3s ease;box-shadow:-12px 0 40px rgba(0,0,0,.6);}
+.drwr.open{right:0;}
+.drwr-h{padding:22px 28px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:flex-start;gap:12px;position:sticky;top:0;background:var(--cd);z-index:2;}
+.drwr-h .id{font:800 22px/1 var(--mo);color:var(--cy);}
+.drwr-h .id .pa{font:500 11px var(--mo);color:var(--t3);margin-left:6px;}
+.drwr-h .ttl{font:500 13px/1.4 var(--sa);color:var(--t1);margin-top:8px;}
+.drwr-h .meta{font:500 10px/1.4 var(--mo);color:var(--t3);margin-top:6px;}
+.drwr-close{background:none;border:1px solid var(--bd);color:var(--t2);width:30px;height:30px;border-radius:6px;cursor:pointer;font:700 14px var(--mo);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.drwr-close:hover{border-color:var(--rd);color:var(--rd);}
+.drwr-b{padding:24px 28px;}
+.drwr-sec{margin-bottom:22px;}
+.drwr-sec h4{font:700 11px/1 var(--mo);text-transform:uppercase;letter-spacing:1.2px;color:var(--cy);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--bd);}
+.attr-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 16px;}
+.attr-row{display:flex;justify-content:space-between;font:500 11px/1.4 var(--mo);padding:4px 0;}
+.attr-row .al{color:var(--t3);}.attr-row .av{color:var(--t1);font-weight:600;text-align:right;word-break:break-all;}
+.hb-large{display:flex;gap:3px;align-items:center;flex-wrap:wrap;}
+.hb-large .hb-l-cell{width:14px;height:24px;border-radius:2px;background:var(--bd);position:relative;}
+.hb-large .hb-l-cell.A{background:var(--gn);}.hb-large .hb-l-cell.I{background:var(--rd);}
+.hb-large .hb-l-cell:hover::after{content:attr(data-d);position:absolute;bottom:30px;left:50%;transform:translateX(-50%);background:#0c1224;border:1px solid var(--cy);border-radius:4px;padding:4px 8px;font:500 9px var(--mo);color:var(--t1);white-space:nowrap;z-index:5;}
+.hb-large .hb-l-cell:hover::before{content:attr(data-q);position:absolute;bottom:50px;left:50%;transform:translateX(-50%);background:#0c1224;border:1px solid var(--bd);border-radius:4px;padding:3px 7px;font:500 9px var(--mo);color:var(--t2);white-space:nowrap;z-index:5;}
+.qty-spark{height:60px;background:var(--cd2);border-radius:8px;padding:8px;border:1px solid var(--bd);}
+.yoy-tbl{width:100%;border-collapse:collapse;font-family:var(--mo);}
+.yoy-tbl th,.yoy-tbl td{padding:7px 8px;text-align:right;font:500 10px var(--mo);border-bottom:1px solid #1c284433;}
+.yoy-tbl th{color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.6px;font-size:9px;}
+.yoy-tbl td{color:var(--t1);}
+.yoy-tbl td:first-child,.yoy-tbl th:first-child{text-align:left;color:var(--t2);}
+.yoy-tbl tr.yoyi-row{background:rgba(255,159,67,.06);}
+.yoy-tbl .delta{font-size:9px;font-weight:700;}
+.mdl-bg{position:fixed;inset:0;background:rgba(5,8,16,.78);backdrop-filter:blur(6px);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
+.mdl-bg.open{display:flex;}
+.mdl{background:var(--cd);border:1px solid var(--bd2);border-radius:14px;width:100%;max-width:780px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;}
+.mdl-h{padding:22px 26px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;gap:14px;}
+.mdl-h h3{font:700 14px/1 var(--mo);letter-spacing:1.4px;text-transform:uppercase;color:var(--t1);display:flex;align-items:center;gap:10px;}
+.mdl-h h3 .ico{color:var(--cy);}
+.mdl-h .badge{font:700 9px/1 var(--mo);letter-spacing:.8px;background:rgba(0,229,200,.12);color:var(--cy);padding:5px 9px;border-radius:5px;text-transform:uppercase;}
+.mdl-b{padding:22px 26px;overflow-y:auto;flex:1;}
+.mdl-f{padding:16px 26px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--cd2);}
+.mdl-section{margin-bottom:22px;}
+.mdl-section .label{font:700 10px/1 var(--mo);letter-spacing:1.2px;text-transform:uppercase;color:var(--cy);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.mdl-section .label .lh{font:500 10px var(--mo);color:var(--t3);text-transform:none;letter-spacing:0;font-style:italic;}
+.cond-row{display:grid;grid-template-columns:32px 1fr auto auto auto auto;gap:8px;background:var(--cd2);border:1px solid var(--bd);border-radius:8px;padding:9px 10px;margin-bottom:7px;align-items:center;}
+.cond-num{width:24px;height:24px;border-radius:50%;background:var(--cy);color:#000;font:800 11px/1 var(--mo);display:flex;align-items:center;justify-content:center;}
+.cond-metric{font:600 12px var(--mo);color:var(--t1);}
+.cond-op{background:var(--sf);border:1px solid var(--bd2);color:var(--cy);padding:5px 10px;border-radius:5px;font:700 11px var(--mo);min-width:50px;text-align:center;}
+.cond-val{background:var(--sf);border:1px solid var(--bd2);color:var(--t1);padding:5px 10px;border-radius:5px;font:600 12px var(--mo);min-width:80px;text-align:center;}
+.cond-period{font:500 11px var(--mo);color:var(--t3);font-style:italic;}
+.cond-x{background:none;border:none;color:var(--t3);cursor:pointer;width:22px;height:22px;border-radius:4px;font:700 14px var(--mo);}
+.cond-x:hover{color:var(--rd);background:rgba(255,91,91,.1);}
+.add-cond{width:100%;padding:13px;background:transparent;border:1px dashed var(--bd2);border-radius:8px;color:var(--cy);font:700 11px/1 var(--mo);letter-spacing:1px;text-transform:uppercase;cursor:pointer;}
+.add-cond:hover{background:rgba(0,229,200,.05);border-color:var(--cy);}
+.preset-grid{display:flex;flex-wrap:wrap;gap:7px;}
+.preset-pill{background:var(--cd2);border:1px solid var(--bd);color:var(--t2);padding:8px 12px;border-radius:6px;font:600 11px var(--mo);cursor:pointer;}
+.preset-pill:hover{border-color:var(--cy);color:var(--cy);background:rgba(0,229,200,.06);}
+.saved-list{background:var(--cd2);border:1px solid var(--bd);border-radius:8px;padding:14px;text-align:center;color:var(--t3);font:500 11px var(--mo);min-height:50px;display:flex;align-items:center;justify-content:center;}
+.saved-list.has-items{display:block;text-align:left;}
+.saved-item{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px dashed #1c284455;}
+.saved-item:last-child{border-bottom:none;}
+.saved-item-name{font:600 12px var(--mo);color:var(--t1);}
+.saved-item-actions{display:flex;gap:5px;}
+.saved-act{background:none;border:1px solid var(--bd);color:var(--t3);padding:4px 8px;border-radius:4px;font:600 9px var(--mo);cursor:pointer;text-transform:uppercase;letter-spacing:.5px;}
+.saved-act.apply:hover{border-color:var(--cy);color:var(--cy);}
+.saved-act.del:hover{border-color:var(--rd);color:var(--rd);}
+.save-row{display:flex;gap:8px;}
+.save-input{flex:1;background:var(--sf);border:1px solid var(--bd);color:var(--t1);padding:8px 12px;border-radius:6px;font:500 12px var(--mo);outline:none;}
+.save-input:focus{border-color:var(--cy);}
+.btn-primary{background:var(--cy);color:#000;border:none;padding:9px 16px;border-radius:6px;font:700 11px var(--mo);letter-spacing:.6px;cursor:pointer;}
+.btn-primary:hover{filter:brightness(1.1);}
+.btn-secondary{background:transparent;border:1px solid var(--bd2);color:var(--t2);padding:9px 16px;border-radius:6px;font:700 11px var(--mo);letter-spacing:.6px;cursor:pointer;}
+.btn-secondary:hover{border-color:var(--cy);color:var(--cy);}
+.btn-danger{background:transparent;border:1px solid var(--bd2);color:var(--rd);padding:9px 16px;border-radius:6px;font:700 11px var(--mo);letter-spacing:.6px;cursor:pointer;}
+.btn-danger:hover{background:rgba(255,91,91,.08);}
+.acmdl{background:var(--cd);border:1px solid var(--cy);border-radius:12px;padding:22px 24px;width:100%;max-width:430px;}
+.acmdl h4{font:700 13px/1 var(--mo);letter-spacing:1.2px;text-transform:uppercase;color:var(--t1);margin-bottom:16px;}
+.acmdl-row{display:grid;grid-template-columns:90px 1fr;gap:12px;margin-bottom:12px;align-items:center;}
+.acmdl-row label{font:600 10px/1 var(--mo);text-transform:uppercase;letter-spacing:.8px;color:var(--t3);}
+.acmdl-row select,.acmdl-row input{background:var(--sf);border:1px solid var(--bd);color:var(--t1);padding:9px 12px;border-radius:6px;font:500 12px var(--mo);outline:none;width:100%;}
+.acmdl-row select:focus,.acmdl-row input:focus{border-color:var(--cy);}
+.acmdl-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;}
+.dm-section{margin-bottom:22px;}
+.dm-section .label{font:700 10px/1 var(--mo);letter-spacing:1.2px;text-transform:uppercase;color:var(--cy);margin-bottom:10px;}
+.dm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.dm-cell{background:var(--cd2);border:1px solid var(--bd);border-radius:8px;padding:14px 10px;text-align:center;cursor:pointer;font:600 12px var(--mo);color:var(--t2);}
+.dm-cell:hover{border-color:var(--cy);color:var(--cy);}
+.dm-cell.selected{background:rgba(0,229,200,.12);border-color:var(--cy);color:var(--cy);}
+.dm-cell.compare{background:rgba(255,159,67,.12);border-color:var(--or);color:var(--or);}
+.dm-cell .dm-y{display:block;font:500 9px var(--mo);color:var(--t3);margin-top:2px;}
+.dm-quick{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.dm-quick button{font:600 10px var(--mo);background:transparent;border:1px solid var(--bd);color:var(--t2);padding:6px 10px;border-radius:5px;cursor:pointer;}
+.dm-quick button:hover{border-color:var(--cy);color:var(--cy);}
+.dm-quick button.active{background:rgba(0,229,200,.1);border-color:var(--cy);color:var(--cy);}
+.ft{text-align:center;padding:24px;font:500 11px/1 var(--mo);color:var(--t3);border-top:1px solid var(--bd);margin-top:20px;}
+.loader{text-align:center;padding:80px;font:500 13px var(--mo);color:var(--t3);}
+.loader .lspin{display:inline-block;width:14px;height:14px;border:2px solid var(--bd);border-top-color:var(--cy);border-radius:50%;animation:spin .8s linear infinite;margin-right:10px;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--cd);border:1px solid var(--gn);border-radius:8px;padding:12px 18px;font:600 11px var(--mo);color:var(--gn);z-index:500;transition:transform .3s;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+@media(max-width:1200px){.hero{grid-template-columns:repeat(3,1fr);}.yoyi-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:768px){.hero,.yoyi-grid{grid-template-columns:1fr 1fr;}.hdr{flex-direction:column;align-items:flex-start;gap:14px;}.w{padding:14px;}.const-wrap{height:480px;}.drwr{width:100%;}}
+</style>
+</head>
+<body>
+<div class="w">
+<div class="hdr">
+  <div class="hdr-l">
+    <div class="cr"><a href="index.html">← Dashboard Hub</a> / <a href="oos.html">OOS</a> / ASIN Explorer</div>
+    <h1>ASIN Explorer</h1>
+    <div class="sub">Per-ASIN Ad + T-Sales + Inventory · YoY Inactive Cohort · 3D Constellation · CSV Export</div>
+  </div>
+  <div class="hdr-r" id="hdrR">Loading…</div>
+</div>
+<div id="app"><div class="loader"><span class="lspin"></span>Loading ASIN data…</div></div>
+<div class="ft">SmartSign USA · ASIN Explorer · Data feed: asin_data.json</div>
+</div>
+
+<div class="drwr-bg" id="drwrBg"></div>
+<aside class="drwr" id="drwr"></aside>
+
+<div class="mdl-bg" id="filterModal">
+  <div class="mdl">
+    <div class="mdl-h">
+      <h3><span class="ico">⚙</span> Custom Filters <span class="badge" id="condCountBadge">0 active</span></h3>
+      <button class="cond-x" style="font-size:18px;width:30px;height:30px;" onclick="closeFilterModal()">×</button>
+    </div>
+    <div class="mdl-b">
+      <div class="mdl-section">
+        <div class="label">Active Conditions <span class="lh">(all must match — AND logic)</span></div>
+        <div id="condList"></div>
+        <button class="add-cond" onclick="openAddCondModal()">+ Add Filter</button>
+      </div>
+      <div class="mdl-section">
+        <div class="label">Quick Presets <span class="lh">(click to apply)</span></div>
+        <div class="preset-grid" id="presetGrid"></div>
+      </div>
+      <div class="mdl-section">
+        <div class="label">Saved Presets</div>
+        <div class="saved-list" id="savedList">No saved presets yet</div>
+        <div style="height:10px"></div>
+        <div class="save-row">
+          <input class="save-input" id="saveName" placeholder="Name this filter set…">
+          <button class="btn-primary" onclick="saveCurrentPreset()">💾 Save Current</button>
+        </div>
+      </div>
+    </div>
+    <div class="mdl-f">
+      <span style="font:500 11px var(--mo);color:var(--t3)" id="condStatus">0 condition(s) active</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn-danger" onclick="clearAllConditions()">Clear All</button>
+        <button class="btn-primary" onclick="applyConditions()" id="applyBtn">Apply Filter(s)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mdl-bg" id="addCondModal" style="z-index:310">
+  <div class="acmdl">
+    <h4>Add Filter Condition</h4>
+    <div class="acmdl-row"><label>Metric</label><select id="acMetric"></select></div>
+    <div class="acmdl-row"><label>Operator</label><select id="acOp"></select></div>
+    <div class="acmdl-row"><label>Value</label><div id="acValHolder"><input id="acVal" placeholder="e.g., 1.5"></div></div>
+    <div class="acmdl-row" id="acPeriodRow"><label>Period</label><select id="acPeriod"></select></div>
+    <div class="acmdl-actions">
+      <button class="btn-secondary" onclick="closeAddCondModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveNewCondition()">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="mdl-bg" id="dateModal">
+  <div class="mdl" style="max-width:680px">
+    <div class="mdl-h">
+      <h3><span class="ico">📅</span> Period Selector</h3>
+      <button class="cond-x" style="font-size:18px;width:30px;height:30px;" onclick="closeDateModal()">×</button>
+    </div>
+    <div class="mdl-b">
+      <div class="dm-section"><div class="label">Quick Picks</div><div class="dm-quick" id="dmQuick"></div></div>
+      <div class="dm-section"><div class="label">Primary (2026)</div><div class="dm-grid" id="dmPrimary"></div></div>
+      <div class="dm-section"><div class="label">Comparison (2025) — same months last year</div><div class="dm-grid" id="dmCompare"></div></div>
+      <div style="font:500 11px var(--mo);color:var(--t3);padding-top:12px;border-top:1px dashed #1c284455;text-align:center" id="dmStatus"></div>
+    </div>
+    <div class="mdl-f">
+      <span style="font:500 11px var(--mo);color:var(--t3)">Tap to toggle months</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn-secondary" onclick="closeDateModal()">Cancel</button>
+        <button class="btn-primary" onclick="applyDateRange()">Apply Period</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const FILE='asin_data.json';
+const $=s=>document.querySelector(s); const $$=s=>document.querySelectorAll(s);
+const F={
+  k:n=>{const a=Math.abs(n);const sg=n<0?'-':'';return sg+'$'+(a>=1e6?(a/1e6).toFixed(2)+'M':a>=1e3?(a/1e3).toFixed(1)+'K':Math.round(a).toLocaleString());},
+  k0:n=>'$'+Math.round(n).toLocaleString(),
+  n:n=>Math.round(n).toLocaleString(),
+  pct:n=>(n>=0?'+':'')+n.toFixed(0)+'%',
+  dp:(c,p)=>{if(!p||p===0)return{t:'—',c:''};const d=((c-p)/Math.abs(p))*100;return{t:(d>=0?'+':'')+d.toFixed(0)+'%',c:d>=0?'up':'dn'};}
+};
+const STORAGE_KEY='asin_explorer_saved_presets';
+const MONTH_KEYS=['jan','feb','mar','apr'];
+const MONTH_LABELS={jan:'January',feb:'February',mar:'March',apr:'April'};
+const MONTH_LABELS_SHORT={jan:'Jan',feb:'Feb',mar:'Mar',apr:'Apr'};
+
+let DATA=null;
+let STATE={search:'',grain:'child',conditions:[],primaryMonths:['jan','feb','mar','apr'],page:1,pageSize:50,sortKey:'tsales_26',sortDir:'desc'};
+let FILTERED=[]; let CONST_3D=null;
+
+async function init(){
+  try{const r=await fetch(FILE);DATA=await r.json();enrich();render();}
+  catch(e){$('#app').innerHTML=`<p style="text-align:center;padding:80px;color:var(--rd);font:500 13px var(--mo)">Could not load asin_data.json<br><small style="color:var(--t3)">${e.message}</small></p>`;}
+}
+
+function enrich(){
+  const dt=new Date();
+  for(const a of DATA.asins){
+    a._ytd26=sumBiz(a,MONTH_KEYS,'26');
+    a._ytd25=sumBiz(a,MONTH_KEYS,'25');
+    a._roas26=a._ytd26[0]>0?a._ytd26[2]/a._ytd26[0]:0;
+    a._roas25=a._ytd25[0]>0?a._ytd25[2]/a._ytd25[0]:0;
+    a._acos26=a._ytd26[2]>0?(a._ytd26[0]/a._ytd26[2])*100:0;
+    a._latestStatus=a.st[a.st.length-1];
+    a._latestQty=a.q[a.q.length-1];
+    a._inactive4w=(a.st.slice(-4).match(/I/g)||[]).length;
+    a._justInactive=a.st.length>=5&&a.st[a.st.length-5]==='A'&&a._latestStatus==='I';
+    a._recovered=a.st.length>=5&&a.st[a.st.length-5]==='I'&&a._latestStatus==='A';
+    if(a.od){try{a._daysOpen=Math.floor((dt-new Date(a.od))/86400000);}catch(e){a._daysOpen=null;}}else a._daysOpen=null;
+    a._yoyTSDelta=a._ytd26[4]-a._ytd25[4];
+    a._yoyTSPct=a._ytd25[4]>0?((a._ytd26[4]-a._ytd25[4])/a._ytd25[4])*100:null;
+  }
+}
+function sumBiz(a,months,year){const out=[0,0,0,0,0,0];for(const m of months){const v=a.b[m+year];if(v)for(let i=0;i<6;i++)out[i]+=v[i];}return out;}
+
+function render(){
+  $('#hdrR').innerHTML=`Source: <b>${DATA.meta.source_file||'OOS xlsx'}</b><br>Generated: <b>${(DATA.meta.generated_at||'').slice(0,10)}</b><br>${DATA.meta.total_asins.toLocaleString()} ASINs · ${DATA.meta.status_dates.length} weeks tracked`;
+  $('#app').innerHTML=`
+    <div class="hero">
+      <div class="hc c1"><div class="lb">Total ASINs</div><div class="vl">${F.n(DATA.summary.total)}</div><div class="dt">${DATA.distinct.category.length} categories</div></div>
+      <div class="hc c2"><div class="lb">Active Now</div><div class="vl up">${F.n(DATA.summary.active_latest)}</div><div class="dt">${(DATA.summary.active_latest/DATA.summary.total*100).toFixed(1)}% of catalog</div></div>
+      <div class="hc c3"><div class="lb">Inactive Now</div><div class="vl dn">${F.n(DATA.summary.inactive_latest)}</div><div class="dt">${(DATA.summary.inactive_latest/DATA.summary.total*100).toFixed(1)}% of catalog</div></div>
+      <div class="hc c4"><div class="lb">YoY Inactive (any month)</div><div class="vl wn">${F.n(DATA.summary.yoyi_total_unique)}</div><div class="dt">unique ASINs Jan–Apr</div></div>
+      <div class="hc c5"><div class="lb">Lost YoY T-Sales</div><div class="vl pu">${F.k(heroLostSales())}</div><div class="dt">YTD across flagged cohort</div></div>
+    </div>
+    <div class="sc" style="padding:16px 16px 22px;">
+      <div class="sh" style="padding:0 6px;">
+        <div class="st">🪐 Category Solar Systems <span class="stb" id="constSubtitle">galactic overview · ${DATA.distinct.category.length} categories · drag to rotate · click any sun to zoom into its system</span></div>
+      </div>
+      <div class="const-wrap">
+        <canvas id="constCanvas"></canvas>
+        <div class="const-loading" id="constLoading"><span class="pulse"></span>Building galaxy…</div>
+        <div class="const-controls">
+          <button class="const-btn" id="rotBtn" onclick="toggleAutoRotate()"><span class="ico">↻</span> Auto-Rotate</button>
+          <button class="const-btn" onclick="resetCamera()"><span class="ico">⌂</span> Galaxy View</button>
+          <button class="const-btn" id="backBtn" onclick="exitFocus()" style="display:none"><span class="ico">←</span> Back to Galaxy</button>
+        </div>
+        <div class="const-legend">
+          <div class="const-leg-title">Planet Status</div>
+          <div class="const-leg-item"><span class="const-leg-dot" style="background:#2ecc71;color:#2ecc71"></span>Active</div>
+          <div class="const-leg-item"><span class="const-leg-dot" style="background:#ff5b5b;color:#ff5b5b"></span>Inactive</div>
+          <div class="const-leg-item"><span class="const-leg-dot" style="background:#ff9f43;color:#ff9f43"></span>YoY Inactive</div>
+          <div class="const-leg-item"><span class="const-leg-dot" style="background:#a78bfa;color:#a78bfa"></span>Just Flipped</div>
+          <div class="const-leg-item"><span class="const-leg-dot" style="background:#60a5fa;color:#60a5fa"></span>Recovered</div>
+          <div class="const-leg-sep"></div>
+          <div class="const-leg-meta">Closer to sun = higher revenue</div>
+          <div class="const-leg-meta">Planet size = T-Sales magnitude</div>
+        </div>
+        <div class="const-info" id="constInfo"><b>${DATA.distinct.category.length}</b><div class="si">category suns</div></div>
+        <div class="const-tooltip" id="constTip"></div>
+      </div>
+    </div>
+    <div class="sc">
+      <div class="sh"><div class="st">⚠ YoY Inactive Cohort · Monthly Impact <span class="stb">click any month to filter table</span></div></div>
+      <div class="yoyi-grid" id="yoyiGrid"></div>
+    </div>
+    <div class="tb">
+      <div class="tb-row">
+        <input class="tb-search" id="searchInput" placeholder="Search by ASIN, parent, SKU, title…">
+        <button class="tb-btn" onclick="openDateModal()">📅 <span id="dateBtnLabel">YTD (Jan–Apr)</span></button>
+        <button class="tb-btn" id="filterBtn" onclick="openFilterModal()">⚙ Custom Filters <span class="bdg" id="filterCount" style="display:none">0</span></button>
+        <button class="tb-btn export" onclick="exportFilteredCSV()">⬇ Export CSV</button>
+        <div class="tb-toggle">
+          <button class="active" data-grain="child" onclick="setGrain('child')">Child ASIN</button>
+          <button data-grain="parent" onclick="setGrain('parent')">Parent (rollup)</button>
+        </div>
+      </div>
+      <div class="tb-row">
+        <div class="tb-presets" id="presetChips"></div>
+        <div class="tb-status" id="resultStatus">— ASINs</div>
+      </div>
+    </div>
+    <div class="sc" style="padding:0;">
+      <div class="tw"><table id="tbl"><thead id="tblHead"></thead><tbody id="tblBody"></tbody></table></div>
+      <div style="padding:14px 22px;"><div class="pg" id="pgWrap"></div></div>
+    </div>`;
+  buildYoyiCards(); buildPresetChips();
+  setTimeout(()=>build3DConstellation(),50);
+  $('#searchInput').addEventListener('input',e=>{STATE.search=e.target.value.trim().toLowerCase();STATE.page=1;refreshTable();refreshConstellation();});
+  applyFilters();
+}
+
+function heroLostSales(){let t=0;for(const m of DATA.yoyi_summary)t+=m.impact['Total Sales']['25']-m.impact['Total Sales']['26'];return t;}
+
+function buildYoyiCards(){
+  $('#yoyiGrid').innerHTML=DATA.yoyi_summary.map(m=>{
+    const lost=m.impact['Total Sales']['25']-m.impact['Total Sales']['26'];
+    const lostO=m.impact['Total Orders']['25']-m.impact['Total Orders']['26'];
+    const tsd=F.dp(m.impact['Total Sales']['26'],m.impact['Total Sales']['25']);
+    return `<div class="yc" data-mkey="${m.mkey}" onclick="filterToYoyi('${m.mkey}')">
+      <div class="ym">${m.month}<span class="ycn">${m.qualified}</span></div>
+      <div class="yr"><span class="yl">T-Sales 25</span><span class="yv">${F.k(m.impact['Total Sales']['25'])}</span></div>
+      <div class="yr"><span class="yl">T-Sales 26</span><span><span class="yv">${F.k(m.impact['Total Sales']['26'])}</span><span class="yd ${tsd.c}">${tsd.t}</span></span></div>
+      <div class="yr"><span class="yl">Lost T-Sales</span><span class="yv dn">${F.k(lost)}</span></div>
+      <div class="yr"><span class="yl">Lost Orders</span><span class="yv dn">${F.n(lostO)}</span></div>
+      <div class="yr"><span class="yl">Spend 25→26</span><span class="yv">${F.k(m.impact['Spend']['25'])} → ${F.k(m.impact['Spend']['26'])}</span></div>
+      <div class="yd-bd">Inactive in ${MONTH_LABELS_SHORT[m.mkey]}: ${m.detection.inactive_in_month} ASINs · ${m.detection.qualified} with business activity</div>
+    </div>`;
+  }).join('');
+}
+
+function filterToYoyi(mkey){
+  const idx=STATE.conditions.findIndex(c=>c.id==='__yoyi__'+mkey);
+  if(idx>=0){STATE.conditions.splice(idx,1);$$('.yc').forEach(c=>c.classList.remove('active'));}
+  else{
+    STATE.conditions=STATE.conditions.filter(c=>!c.id||!c.id.startsWith('__yoyi__'));
+    STATE.conditions.push({id:'__yoyi__'+mkey,metric:'yoyi_month',op:'=',val:mkey,period:'na'});
+    $$('.yc').forEach(c=>c.classList.toggle('active',c.dataset.mkey===mkey));
+  }
+  applyFilters(); renderConditions();
+}
+
+const METRIC_DEFS={
+  spend:{label:'Spend ($)',type:'num',field:0,getter:numGetter},
+  paid_orders:{label:'Paid Orders',type:'num',field:1,getter:numGetter},
+  ad_sales:{label:'Ad Sales ($)',type:'num',field:2,getter:numGetter},
+  sessions:{label:'Sessions',type:'num',field:3,getter:numGetter},
+  total_sales:{label:'Total Sales ($)',type:'num',field:4,getter:numGetter},
+  total_orders:{label:'Total Orders',type:'num',field:5,getter:numGetter},
+  roas:{label:'ROAS',type:'num',getter:roasGetter},
+  acos:{label:'ACOS (%)',type:'num',getter:acosGetter},
+  yoy_ts_delta:{label:'YoY Δ T-Sales ($)',type:'num',getter:yoyDeltaGetter},
+  yoy_ts_pct:{label:'YoY Δ T-Sales (%)',type:'num',getter:yoyPctGetter},
+  latest_status:{label:'Latest Status',type:'sel',options:['Active','Inactive'],getter:a=>a._latestStatus==='A'?'Active':a._latestStatus==='I'?'Inactive':'Unknown',noPeriod:true},
+  ever_inactive:{label:'Ever Inactive (18wk)',type:'sel',options:['Yes','No'],getter:a=>a.st.includes('I')?'Yes':'No',noPeriod:true},
+  weeks_inactive_4w:{label:'Weeks Inactive in Last 4',type:'num',getter:a=>a._inactive4w,noPeriod:true},
+  category:{label:'Category',type:'sel',options:()=>DATA.distinct.category,getter:a=>a.c,noPeriod:true},
+  subcategory:{label:'Subcategory',type:'sel',options:()=>DATA.distinct.subcategory,getter:a=>a.sc,noPeriod:true},
+  ownership:{label:'Ownership',type:'sel',options:()=>DATA.distinct.ownership,getter:a=>a.o,noPeriod:true},
+  fulfillment:{label:'Fulfillment',type:'sel',options:()=>DATA.distinct.fulfillment,getter:a=>a.f,noPeriod:true},
+  has_inv:{label:'Has Inventory (latest)',type:'sel',options:['Yes','No'],getter:a=>a._latestQty>0?'Yes':'No',noPeriod:true},
+  latest_qty:{label:'Latest Inventory Qty',type:'num',getter:a=>a._latestQty,noPeriod:true},
+  price:{label:'Price ($)',type:'num',getter:a=>a.p||0,noPeriod:true},
+  days_open:{label:'Days Since Listed',type:'num',getter:a=>a._daysOpen||0,noPeriod:true},
+  yoyi_month:{label:'YoY Inactive — month',type:'sel',options:['jan','feb','mar','apr','any'],getter:(a,p,v)=>{if(v==='any')return a.yi.length>0?'any':null;return a.yi.includes(v)?v:null;},noPeriod:true},
+  just_inactive:{label:'Just Flipped Active→Inactive (4w)',type:'sel',options:['Yes','No'],getter:a=>a._justInactive?'Yes':'No',noPeriod:true},
+  recovered:{label:'Recovered Inactive→Active (4w)',type:'sel',options:['Yes','No'],getter:a=>a._recovered?'Yes':'No',noPeriod:true},
+};
+const PERIOD_OPTS=[
+  {id:'ytd',label:'YTD (selected months)'},
+  {id:'jan26',label:'Jan 2026'},{id:'feb26',label:'Feb 2026'},{id:'mar26',label:'Mar 2026'},{id:'apr26',label:'Apr 2026'},
+  {id:'jan25',label:'Jan 2025'},{id:'feb25',label:'Feb 2025'},{id:'mar25',label:'Mar 2025'},{id:'apr25',label:'Apr 2025'},
+];
+function numGetter(a,period,_,mDef){if(period==='ytd')return STATE.primaryMonths.reduce((s,m)=>s+(a.b[m+'26']?.[mDef.field]||0),0);return a.b[period]?.[mDef.field]||0;}
+function roasGetter(a,period){if(period==='ytd'){let s=0,as=0;for(const m of STATE.primaryMonths){s+=a.b[m+'26']?.[0]||0;as+=a.b[m+'26']?.[2]||0;}return s>0?as/s:0;}const v=a.b[period];return v&&v[0]>0?v[2]/v[0]:0;}
+function acosGetter(a,period){if(period==='ytd'){let s=0,as=0;for(const m of STATE.primaryMonths){s+=a.b[m+'26']?.[0]||0;as+=a.b[m+'26']?.[2]||0;}return as>0?(s/as)*100:0;}const v=a.b[period];return v&&v[2]>0?(v[0]/v[2])*100:0;}
+function yoyDeltaGetter(a,period){if(!period||period==='ytd'||period==='na')return a._ytd26[4]-a._ytd25[4];const m=period.slice(0,3);return(a.b[m+'26']?.[4]||0)-(a.b[m+'25']?.[4]||0);}
+function yoyPctGetter(a,period){let v25,v26;if(!period||period==='ytd'||period==='na'){v25=a._ytd25[4];v26=a._ytd26[4];}else{const m=period.slice(0,3);v25=a.b[m+'25']?.[4]||0;v26=a.b[m+'26']?.[4]||0;}return v25>0?((v26-v25)/v25)*100:0;}
+
+const QUICK_PRESETS=[
+  {id:'mar-yoyi',label:'🎯 March YoY Inactive',conds:[{metric:'yoyi_month',op:'=',val:'mar',period:'na'}]},
+  {id:'feb-yoyi',label:'🎯 Feb YoY Inactive',conds:[{metric:'yoyi_month',op:'=',val:'feb',period:'na'}]},
+  {id:'lost-rev',label:'⬇ Lost YoY T-Sales >$500',conds:[{metric:'yoyi_month',op:'=',val:'any',period:'na'},{metric:'yoy_ts_delta',op:'<',val:-500,period:'ytd'}]},
+  {id:'has-inv-inactive',label:'📦 Has Inv but Inactive',conds:[{metric:'has_inv',op:'=',val:'Yes',period:'na'},{metric:'latest_status',op:'=',val:'Inactive',period:'na'}]},
+  {id:'top-risk',label:'🔥 Top Revenue at Risk',conds:[{metric:'latest_status',op:'=',val:'Inactive',period:'na'},{metric:'total_sales',op:'>',val:500,period:'ytd'}]},
+  {id:'just-flip',label:'⚡ Just Flipped Inactive',conds:[{metric:'just_inactive',op:'=',val:'Yes',period:'na'}]},
+  {id:'recovered',label:'✓ Recovered (4w)',conds:[{metric:'recovered',op:'=',val:'Yes',period:'na'}]},
+  {id:'spend-no-orders',label:'🩸 Spend>$50 · 0 Orders',conds:[{metric:'spend',op:'>',val:50,period:'ytd'},{metric:'paid_orders',op:'=',val:0,period:'ytd'}]},
+  {id:'inactive-4w',label:'🚫 Inactive 4+ Weeks',conds:[{metric:'weeks_inactive_4w',op:'=',val:4,period:'na'}]},
+  {id:'low-roas',label:'↘ ROAS <1.5 · Spend >$100',conds:[{metric:'roas',op:'<',val:1.5,period:'ytd'},{metric:'spend',op:'>',val:100,period:'ytd'}]},
+  {id:'high-roas',label:'⭐ Stars: ROAS >5 · Ord >10',conds:[{metric:'roas',op:'>',val:5,period:'ytd'},{metric:'paid_orders',op:'>',val:10,period:'ytd'}]},
+];
+
+function buildPresetChips(){
+  $('#presetChips').innerHTML=QUICK_PRESETS.map(p=>`<button class="tb-preset" data-pid="${p.id}" onclick="applyPreset('${p.id}')">${p.label}</button>`).join('');
+  $('#presetGrid').innerHTML=QUICK_PRESETS.map(p=>`<button class="preset-pill" onclick="applyPreset('${p.id}')">${p.label}</button>`).join('');
+}
+function applyPreset(pid){
+  const p=QUICK_PRESETS.find(x=>x.id===pid); if(!p)return;
+  const act=$(`.tb-preset[data-pid="${pid}"]`)?.classList.contains('active');
+  if(act){STATE.conditions=STATE.conditions.filter(c=>!c._presetId||c._presetId!==pid);$$('.tb-preset').forEach(b=>b.classList.remove('active'));}
+  else{
+    STATE.conditions=[];
+    p.conds.forEach((c,i)=>STATE.conditions.push({...c,id:`${pid}_${i}`,_presetId:pid}));
+    $$('.tb-preset').forEach(b=>b.classList.toggle('active',b.dataset.pid===pid));
+    $$('.yc').forEach(c=>c.classList.remove('active'));
+  }
+  applyFilters(); renderConditions();
+}
+function periodLabel(p){return PERIOD_OPTS.find(x=>x.id===p)?.label||p;}
+
+function applyFilters(){
+  let arr=DATA.asins;
+  if(STATE.search){const q=STATE.search;arr=arr.filter(a=>(a.id&&a.id.toLowerCase().includes(q))||(a.pa&&a.pa.toLowerCase().includes(q))||(a.ss&&a.ss.toLowerCase().includes(q))||(a.sk&&a.sk.toLowerCase().includes(q))||(a.t&&a.t.toLowerCase().includes(q)));}
+  for(const c of STATE.conditions){
+    const def=METRIC_DEFS[c.metric]; if(!def)continue;
+    arr=arr.filter(a=>{
+      const period=def.noPeriod?null:(c.period||'ytd');
+      const v=def.getter(a,period,c.val,def);
+      if(def.type==='sel'){if(c.metric==='yoyi_month')return v!==null&&v!==undefined;return c.op==='='?v===c.val:v!==c.val;}
+      const tv=parseFloat(c.val);
+      switch(c.op){case'>':return v>tv;case'<':return v<tv;case'>=':return v>=tv;case'<=':return v<=tv;case'=':return v===tv;case'!=':return v!==tv;}
+      return true;
+    });
+  }
+  FILTERED=arr; refreshTable(); refreshConstellation(); refreshFilterCount();
+}
+function refreshFilterCount(){
+  const n=STATE.conditions.length;
+  const el=$('#filterCount'); if(el){el.textContent=n;el.style.display=n>0?'inline-block':'none';}
+  $('#filterBtn')?.classList.toggle('active',n>0);
+  if($('#condCountBadge'))$('#condCountBadge').textContent=`${n} active`;
+  if($('#condStatus'))$('#condStatus').textContent=`${n} condition(s) active`;
+  if($('#applyBtn'))$('#applyBtn').textContent=`Apply ${n} Filter${n!==1?'s':''}`;
+}
+
+function refreshTable(){
+  let rows=STATE.grain==='parent'?rollupParents(FILTERED):FILTERED;
+  rows=sortRows(rows);
+  const total=rows.length, ps=STATE.pageSize;
+  const totalPages=Math.max(1,Math.ceil(total/ps));
+  if(STATE.page>totalPages)STATE.page=totalPages;
+  const start=(STATE.page-1)*ps;
+  const slice=rows.slice(start,start+ps);
+  $('#tblHead').innerHTML=`<tr>${headerCell('id','ASIN')}${headerCell('cat','Category')}${headerCell('status','Status (18wk)')}${headerCell('latest_qty','Qty',1)}${headerCell('spend_26','Spend YTD',1)}${headerCell('tsales_26','T-Sales YTD',1)}${headerCell('tsales_25','T-Sales 25',1)}${headerCell('yoy_delta','YoY Δ',1)}${headerCell('roas_26','ROAS',1)}${headerCell('orders_26','Orders',1)}${headerCell('flag','Flag',1)}</tr>`;
+  $('#tblBody').innerHTML=slice.length?slice.map(rowHTML).join(''):`<tr><td colspan="11" style="text-align:center;padding:60px;color:var(--t3);">No ASINs match the current filters.</td></tr>`;
+  $$('#tblBody tr').forEach(tr=>tr.addEventListener('click',()=>openDrawer(tr.dataset.id,tr.dataset.parent==='1')));
+  $('#pgWrap').innerHTML=`
+    <div class="pg-info">Showing <b>${slice.length?start+1:0}–${start+slice.length}</b> of <b>${F.n(total)}</b> ${STATE.grain==='parent'?'parent ASINs':'ASINs'}</div>
+    <div class="pg-ctrls">
+      <button onclick="setPage(1)" ${STATE.page===1?'disabled':''}>«</button>
+      <button onclick="setPage(${STATE.page-1})" ${STATE.page===1?'disabled':''}>‹</button>
+      ${pgButtons(STATE.page,totalPages)}
+      <button onclick="setPage(${STATE.page+1})" ${STATE.page===totalPages?'disabled':''}>›</button>
+      <button onclick="setPage(${totalPages})" ${STATE.page===totalPages?'disabled':''}>»</button>
+      <select onchange="setPageSize(this.value)">
+        <option value="25" ${ps==25?'selected':''}>25/page</option>
+        <option value="50" ${ps==50?'selected':''}>50/page</option>
+        <option value="100" ${ps==100?'selected':''}>100/page</option>
+        <option value="200" ${ps==200?'selected':''}>200/page</option>
+      </select>
+    </div>`;
+  $('#resultStatus').innerHTML=`<b>${F.n(total)}</b> match · <b>${F.k(rows.reduce((s,a)=>s+(a._ytd26?a._ytd26[4]:0),0))}</b> T-Sales · <b>${F.k(rows.reduce((s,a)=>s+(a._ytd26?a._ytd26[0]:0),0))}</b> Spend`;
+}
+function pgButtons(cur,tot){
+  const out=[]; let s=Math.max(1,cur-2),e=Math.min(tot,cur+2);
+  if(s>1)out.push(`<button onclick="setPage(1)">1</button>${s>2?'<span style="color:var(--t3);font:500 11px var(--mo);padding:0 4px">…</span>':''}`);
+  for(let i=s;i<=e;i++)out.push(`<button class="${i===cur?'active':''}" onclick="setPage(${i})">${i}</button>`);
+  if(e<tot)out.push(`${e<tot-1?'<span style="color:var(--t3);font:500 11px var(--mo);padding:0 4px">…</span>':''}<button onclick="setPage(${tot})">${tot}</button>`);
+  return out.join('');
+}
+function setPage(n){STATE.page=Math.max(1,n);refreshTable();window.scrollTo({top:$('#tbl').getBoundingClientRect().top+window.scrollY-80,behavior:'smooth'});}
+function setPageSize(s){STATE.pageSize=parseInt(s,10);STATE.page=1;refreshTable();}
+function headerCell(key,label,right){const arrow=STATE.sortKey===key?`<span class="sortarrow">${STATE.sortDir==='desc'?'▼':'▲'}</span>`:'';return `<th class="${right?'':'lf'}" onclick="sortBy('${key}')">${label}${arrow}</th>`;}
+function sortBy(key){if(STATE.sortKey===key)STATE.sortDir=STATE.sortDir==='desc'?'asc':'desc';else{STATE.sortKey=key;STATE.sortDir='desc';}refreshTable();}
+function rowHTML(a){
+  const yoyD=a._yoyTSDelta, yoyP=a._yoyTSPct;
+  const yoyCl=yoyD===0?'':yoyD>0?'up':'dn';
+  const yoyTx=a._ytd25[4]===0?(a._ytd26[4]>0?'NEW':'—'):(yoyP===null?'—':F.pct(yoyP));
+  const flag=a._isParent?'':(a._justInactive?'<span class="pill flag">JUST FLIPPED</span>':a._recovered?'<span class="pill" style="background:rgba(96,165,250,.18);color:var(--bl)">RECOVERED</span>':'');
+  return `<tr data-id="${a.id}" data-parent="${a._isParent?1:0}">
+    <td class="lf"><div><span class="row-id">${a.id}</span> <span class="pill ${a._latestStatus}">${a._latestStatus==='A'?'Act':a._latestStatus==='I'?'Inact':'Unk'}</span> ${flag}</div><div class="row-title">${a.t||''}</div></td>
+    <td class="lf"><span class="row-cat">${a.c||'—'}<br>${a.sc||''}</span></td>
+    <td class="lf"><div class="hb">${(a.st||'').split('').map(s=>`<div class="hb-cell ${s}"></div>`).join('')}</div></td>
+    <td>${F.n(a._latestQty)}</td><td>${F.k(a._ytd26[0])}</td><td>${F.k(a._ytd26[4])}</td>
+    <td style="color:var(--t3)">${F.k(a._ytd25[4])}</td><td class="${yoyCl}">${yoyTx}</td>
+    <td>${a._roas26.toFixed(2)}x</td><td>${F.n(a._ytd26[1])}</td>
+    <td style="font-size:9px;color:var(--or);text-transform:uppercase">${a._isParent?`<span class="pill flag">${a._childCount} children</span>`:(a.yi.length?a.yi.map(m=>MONTH_LABELS_SHORT[m]).join(' '):'')}</td>
+  </tr>`;
+}
+function sortRows(rows){
+  const key=STATE.sortKey,dir=STATE.sortDir==='desc'?-1:1;
+  const fns={id:a=>a.id||'',cat:a=>(a.c||'')+(a.sc||''),status:a=>a._latestStatus,latest_qty:a=>a._latestQty,spend_26:a=>a._ytd26[0],tsales_26:a=>a._ytd26[4],tsales_25:a=>a._ytd25[4],yoy_delta:a=>a._yoyTSDelta,roas_26:a=>a._roas26,orders_26:a=>a._ytd26[1],flag:a=>(a.yi.length||0)+(a._justInactive?2:0)+(a._recovered?1:0)};
+  const fn=fns[key]||fns.tsales_26;
+  return [...rows].sort((a,b)=>{const va=fn(a),vb=fn(b);if(typeof va==='string')return va.localeCompare(vb)*dir;return(va-vb)*dir;});
+}
+function rollupParents(arr){
+  const m=new Map();
+  for(const a of arr){const k=a.pa||a.id;if(!m.has(k))m.set(k,{id:k,pa:a.pa,c:a.c,sc:a.sc,o:a.o,t:a.t,_children:[],_isParent:true});m.get(k)._children.push(a);}
+  const out=[];
+  for(const p of m.values()){
+    const ch=p._children;
+    p._childCount=ch.length;
+    p._activeCount=ch.filter(c=>c._latestStatus==='A').length;
+    p._latestStatus=p._activeCount===ch.length?'A':p._activeCount===0?'I':'M';
+    p._latestQty=ch.reduce((s,c)=>s+c._latestQty,0);
+    p._ytd26=[0,0,0,0,0,0]; p._ytd25=[0,0,0,0,0,0];
+    for(const c of ch)for(let i=0;i<6;i++){p._ytd26[i]+=c._ytd26[i];p._ytd25[i]+=c._ytd25[i];}
+    p._roas26=p._ytd26[0]>0?p._ytd26[2]/p._ytd26[0]:0;
+    p._yoyTSDelta=p._ytd26[4]-p._ytd25[4];
+    p._yoyTSPct=p._ytd25[4]>0?((p._ytd26[4]-p._ytd25[4])/p._ytd25[4])*100:null;
+    p.yi=[...new Set(ch.flatMap(c=>c.yi))];
+    const wkN=ch[0].st.length; let st='';
+    for(let w=0;w<wkN;w++){let aN=0,iN=0;for(const c of ch){const s=c.st[w];if(s==='A')aN++;else if(s==='I')iN++;}if(aN===ch.length)st+='A';else if(iN===ch.length)st+='I';else st+=aN>=iN?'A':'I';}
+    p.st=st;
+    out.push(p);
+  }
+  return out;
+}
+function setGrain(g){STATE.grain=g;$$('.tb-toggle button').forEach(b=>b.classList.toggle('active',b.dataset.grain===g));STATE.page=1;refreshTable();}
+
+function csvEscape(v){if(v===null||v===undefined)return'';const s=String(v);if(s.includes(',')||s.includes('"')||s.includes('\n'))return'"'+s.replace(/"/g,'""')+'"';return s;}
+function exportFilteredCSV(){
+  const rows=STATE.grain==='parent'?rollupParents(FILTERED):FILTERED;
+  if(!rows.length){showToast('Nothing to export','rd');return;}
+  const headers=['Child ASIN','Parent ASIN','Seller SKU','Internal SKU','Title','Category','Subcategory','Ownership','Fulfillment','Price','Listed Date','Days Since Listed','Latest Status','Latest Qty','Weeks Inactive (4w)','Just Flipped','Recovered','YoY Inactive Months','Spend YTD','Paid Orders YTD','Ad Sales YTD','Sessions YTD','Total Sales YTD','Total Orders YTD','Spend 25 YTD','Paid Orders 25 YTD','Ad Sales 25 YTD','Sessions 25 YTD','Total Sales 25 YTD','Total Orders 25 YTD','YoY Δ T-Sales ($)','YoY Δ T-Sales (%)','ROAS','ROAS 25','ACOS (%)','Spend Jan 26','T-Sales Jan 26','Spend Jan 25','T-Sales Jan 25','Spend Feb 26','T-Sales Feb 26','Spend Feb 25','T-Sales Feb 25','Spend Mar 26','T-Sales Mar 26','Spend Mar 25','T-Sales Mar 25','Spend Apr 26','T-Sales Apr 26','Spend Apr 25','T-Sales Apr 25','18-Week Status','Remark'];
+  const r2=n=>(n!==null&&n!==undefined)?(+n).toFixed(2):'';
+  const r3=n=>(n!==null&&n!==undefined)?(+n).toFixed(3):'';
+  const lines=[headers.map(csvEscape).join(',')];
+  for(const a of rows){
+    const r=[a.id,a.pa,a.ss,a.sk,a.t,a.c,a.sc,a.o,a.f,a.p,a.od,a._daysOpen,a._latestStatus==='A'?'Active':a._latestStatus==='I'?'Inactive':'Unknown',a._latestQty,a._inactive4w,a._justInactive?'Yes':'No',a._recovered?'Yes':'No',(a.yi||[]).map(m=>MONTH_LABELS_SHORT[m]).join(';'),r2(a._ytd26[0]),a._ytd26[1],r2(a._ytd26[2]),a._ytd26[3],r2(a._ytd26[4]),a._ytd26[5],r2(a._ytd25[0]),a._ytd25[1],r2(a._ytd25[2]),a._ytd25[3],r2(a._ytd25[4]),a._ytd25[5],r2(a._yoyTSDelta),a._yoyTSPct===null?'':r2(a._yoyTSPct),r3(a._roas26),r3(a._roas25),r2(a._acos26),r2(a.b?.jan26?.[0]||0),r2(a.b?.jan26?.[4]||0),r2(a.b?.jan25?.[0]||0),r2(a.b?.jan25?.[4]||0),r2(a.b?.feb26?.[0]||0),r2(a.b?.feb26?.[4]||0),r2(a.b?.feb25?.[0]||0),r2(a.b?.feb25?.[4]||0),r2(a.b?.mar26?.[0]||0),r2(a.b?.mar26?.[4]||0),r2(a.b?.mar25?.[0]||0),r2(a.b?.mar25?.[4]||0),r2(a.b?.apr26?.[0]||0),r2(a.b?.apr26?.[4]||0),r2(a.b?.apr25?.[0]||0),r2(a.b?.apr25?.[4]||0),a.st,a.r];
+    lines.push(r.map(csvEscape).join(','));
+  }
+  const csv='\uFEFF'+lines.join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement('a');
+  let nm=['asin_export'];
+  for(const c of STATE.conditions){const def=METRIC_DEFS[c.metric];if(def)nm.push(`${c.metric}_${c.op}_${c.val}`.replace(/[^\w]/g,''));}
+  if(STATE.search)nm.push('search_'+STATE.search.replace(/[^\w]/g,'').slice(0,20));
+  nm.push(new Date().toISOString().slice(0,10));
+  link.download=nm.join('__').slice(0,200)+'.csv';
+  link.href=url; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
+  showToast(`✓ Exported ${F.n(rows.length)} ${STATE.grain==='parent'?'parent ASINs':'ASINs'}`);
+}
+function showToast(msg,color){const t=$('#toast');t.textContent=msg;t.style.borderColor=color==='rd'?'var(--rd)':'var(--gn)';t.style.color=color==='rd'?'var(--rd)':'var(--gn)';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+function build3DConstellation(){
+  const canvas=$('#constCanvas'), tip=$('#constTip');
+  const wrap=canvas.parentElement;
+  let W=wrap.clientWidth, H=wrap.clientHeight;
+  const scene=new THREE.Scene();
+  scene.fog=new THREE.FogExp2(0x04060d, 0.0035);
+  const camera=new THREE.PerspectiveCamera(55, W/H, 0.1, 4000);
+  const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'high-performance'});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(W,H,false);
+  renderer.setClearColor(0x000000,0);
+
+  // ===== Background galaxy with stars =====
+  const bgGeom=new THREE.SphereGeometry(1800,32,16);
+  const bgMat=new THREE.ShaderMaterial({
+    uniforms:{time:{value:0}},
+    vertexShader:`varying vec3 vP; void main(){ vP=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
+    fragmentShader:`
+      varying vec3 vP; uniform float time;
+      float hash(vec3 p){p=fract(p*0.3183);p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}
+      void main(){
+        vec3 d=normalize(vP);
+        float t=clamp((d.y+1.)*.5,0.,1.);
+        // deep space gradient
+        vec3 col=mix(vec3(.02,.03,.07), vec3(.04,.02,.08), t);
+        // distant stars
+        float h=hash(floor(d*1200.));
+        col += vec3(step(0.996, h) * 0.8);
+        // bright stars (twinkle slowly)
+        float h2=hash(floor(d*300.));
+        float tw=0.5+0.5*sin(time*0.5+h2*30.);
+        col += vec3(step(0.9992, h2) * 1.5 * tw);
+        gl_FragColor=vec4(col,1.);
+      }`,
+    side:THREE.BackSide,
+  });
+  scene.add(new THREE.Mesh(bgGeom,bgMat));
+
+  // ===== Build category index =====
+  // Group ASINs by category, get aggregate stats per category
+  const catData = {};
+  for (const a of DATA.asins) {
+    const c = a.c || 'Uncategorized';
+    if (!catData[c]) catData[c] = { name: c, asins: [], totalSales: 0, inactiveCount: 0, yoyInactiveCount: 0 };
+    catData[c].asins.push(a);
+    catData[c].totalSales += a._ytd26[4] || 0;
+    if (a._latestStatus === 'I') catData[c].inactiveCount++;
+    if (a.yi && a.yi.length) catData[c].yoyInactiveCount++;
+  }
+  const categories = Object.values(catData).sort((a,b) => b.totalSales - a.totalSales);
+  const N_CATS = categories.length;
+  console.log(`Built ${N_CATS} category systems`);
+
+  // ===== Place suns in a spiral/cluster layout =====
+  // Larger categories at front, all in a wide circular arrangement on x-z plane
+  const sunPositions = []; // {cat, x, y, z, radius}
+  const galaxyR = 320;
+  for (let i = 0; i < N_CATS; i++) {
+    const cat = categories[i];
+    // Golden-angle spiral for even distribution
+    const phi = i * 2.39996;
+    const r = galaxyR * Math.sqrt((i + 0.5) / N_CATS);
+    const x = r * Math.cos(phi);
+    const z = r * Math.sin(phi);
+    const y = (Math.random() - 0.5) * 35; // slight vertical scatter
+    // Sun size: log of total sales, normalized
+    const maxSales = categories[0].totalSales;
+    const sunSize = 3 + Math.log10(Math.max(10, cat.totalSales)) / Math.log10(Math.max(10, maxSales)) * 9;
+    sunPositions.push({ cat, x, y, z, sunSize, idx: i });
+  }
+
+  // ===== Pre-compute planet positions (orbiting their sun) =====
+  // Distance INVERSE to revenue (top sellers close, small SKUs far)
+  // Use 3D orbital placement (azimuth + altitude)
+  function computePlanetPositions(forCatIdx) {
+    // For overview: only compute for ALL ASINs of ALL suns at galaxy scale
+    // For focused view: scale up the chosen system 6x and hide others
+    const positions = new Float32Array(DATA.asins.length * 3);
+    const baseColors = new Float32Array(DATA.asins.length * 3);
+    const sizes = new Float32Array(DATA.asins.length);
+    const sunIdxOf = new Int32Array(DATA.asins.length);
+
+    // We need to know each ASIN's sun and its rank within
+    let asinIdx = 0;
+    const isFocus = forCatIdx !== null && forCatIdx !== undefined && forCatIdx >= 0;
+    const focusScale = 5.5;
+
+    for (let s = 0; s < sunPositions.length; s++) {
+      const sp = sunPositions[s];
+      // Sort cat's ASINs by T-Sales descending
+      const sortedAsins = [...sp.cat.asins].sort((a,b) => b._ytd26[4] - a._ytd26[4]);
+      const nA = sortedAsins.length;
+      const maxAsinSales = sortedAsins[0] ? sortedAsins[0]._ytd26[4] : 1;
+
+      const isThisFocus = isFocus && s === forCatIdx;
+      const sunScale = isThisFocus ? focusScale : 1.0;
+      // In focused mode: push other suns far away (off-screen) and hide
+      const sunPosScale = isThisFocus ? 1.0 : (isFocus ? 0.0001 : 1.0);
+
+      for (let j = 0; j < nA; j++) {
+        const a = sortedAsins[j];
+        const i = DATA.asins.indexOf(a);
+        if (i < 0) continue;
+        sunIdxOf[i] = s;
+
+        // Orbit distance: inverse to revenue (normalized 0-1 where 0=top)
+        // We use rank-based to give even spread
+        const rankFrac = j / Math.max(1, nA - 1);
+        // Distance from sun: small inner radius (4 * sunSize) to large outer (16 * sunSize)
+        const orbitDist = (sp.sunSize * 1.3) + rankFrac * (sp.sunSize * 6.5);
+
+        // Place evenly on a sphere around sun using fibonacci
+        const phi2 = j * 2.39996 * 1.3;
+        const theta2 = Math.acos(1 - 2 * ((j + 0.5) / Math.max(1,nA)));
+        const px = orbitDist * Math.sin(theta2) * Math.cos(phi2);
+        const py = orbitDist * Math.sin(theta2) * Math.sin(phi2);
+        const pz = orbitDist * Math.cos(theta2);
+
+        // Final position: sun position + offset (both scaled)
+        positions[i*3]   = (sp.x + px * sunScale) * sunPosScale;
+        positions[i*3+1] = (sp.y + py * sunScale) * sunPosScale;
+        positions[i*3+2] = (sp.z + pz * sunScale) * sunPosScale;
+
+        // Color: by status
+        let col;
+        if (a._latestStatus === 'I') col = [1.0, 0.36, 0.36];
+        else if (a._justInactive) col = [0.65, 0.55, 0.98];
+        else if (a._recovered) col = [0.38, 0.65, 0.98];
+        else if (a.yi && a.yi.length) col = [1.0, 0.62, 0.26];
+        else if (a._latestStatus === 'A') col = [0.18, 0.80, 0.44];
+        else col = [0.42, 0.50, 0.64];
+        baseColors[i*3] = col[0]; baseColors[i*3+1] = col[1]; baseColors[i*3+2] = col[2];
+
+        // Size: by T-Sales magnitude
+        const sizeScale = isThisFocus ? 1.8 : (isFocus ? 0 : 1.0);
+        const baseSize = 2.5 + (Math.log10(Math.max(1, a._ytd26[4])) / Math.max(1, Math.log10(Math.max(1, maxAsinSales)))) * 7;
+        sizes[i] = baseSize * sizeScale;
+      }
+    }
+    return { positions, baseColors, sizes, sunIdxOf };
+  }
+
+  // Initial overview build
+  const initial = computePlanetPositions(null);
+  const positions = initial.positions;
+  const baseColors = initial.baseColors;
+  const sizes = initial.sizes;
+  const sunIdxOf = initial.sunIdxOf;
+
+  // ===== Point sprite texture =====
+  const ptTex = (() => {
+    const c = document.createElement('canvas'); c.width = 128; c.height = 128;
+    const cx = c.getContext('2d');
+    const g = cx.createRadialGradient(64, 64, 0, 64, 64, 64);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.2, 'rgba(255,255,255,0.95)');
+    g.addColorStop(0.45, 'rgba(255,255,255,0.55)');
+    g.addColorStop(0.85, 'rgba(255,255,255,0.06)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    cx.fillStyle = g; cx.fillRect(0, 0, 128, 128);
+    const t = new THREE.CanvasTexture(c); t.minFilter = THREE.LinearFilter;
+    return t;
+  })();
+
+  // ===== Sun sprite texture: bigger soft glow with hot core =====
+  const sunTex = (() => {
+    const c = document.createElement('canvas'); c.width = 256; c.height = 256;
+    const cx = c.getContext('2d');
+    const g = cx.createRadialGradient(128, 128, 0, 128, 128, 128);
+    g.addColorStop(0, 'rgba(255,255,240,1)');
+    g.addColorStop(0.08, 'rgba(255,235,180,0.98)');
+    g.addColorStop(0.22, 'rgba(255,180,90,0.7)');
+    g.addColorStop(0.5, 'rgba(255,140,60,0.25)');
+    g.addColorStop(0.85, 'rgba(255,100,50,0.04)');
+    g.addColorStop(1, 'rgba(255,100,50,0)');
+    cx.fillStyle = g; cx.fillRect(0, 0, 256, 256);
+    const t = new THREE.CanvasTexture(c); t.minFilter = THREE.LinearFilter;
+    return t;
+  })();
+
+  // ===== Planets layer =====
+  const geom = new THREE.BufferGeometry();
+  geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geom.setAttribute('color', new THREE.BufferAttribute(baseColors.slice(), 3));
+  geom.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+  const planetMat = new THREE.ShaderMaterial({
+    uniforms: { tex: { value: ptTex } },
+    vertexShader: `
+      attribute float size;
+      varying vec3 vC;
+      void main() {
+        vC = color;
+        vec4 mv = modelViewMatrix * vec4(position, 1.);
+        gl_PointSize = size * (340. / -mv.z);
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: `
+      uniform sampler2D tex;
+      varying vec3 vC;
+      void main() {
+        vec4 t = texture2D(tex, gl_PointCoord);
+        if (t.a < 0.02) discard;
+        float core = smoothstep(0., 0.4, t.a);
+        vec3 col = vC + vC * 0.55 * core;
+        gl_FragColor = vec4(col, t.a * 0.95);
+      }`,
+    vertexColors: true,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const planets = new THREE.Points(geom, planetMat);
+  scene.add(planets);
+
+  // ===== Suns layer (separate Points for hover detection + bigger sprite) =====
+  const sunPos = new Float32Array(N_CATS * 3);
+  const sunColors = new Float32Array(N_CATS * 3);
+  const sunSizes = new Float32Array(N_CATS);
+  for (let i = 0; i < N_CATS; i++) {
+    const sp = sunPositions[i];
+    sunPos[i*3] = sp.x; sunPos[i*3+1] = sp.y; sunPos[i*3+2] = sp.z;
+    // Sun color: vary slightly by health (greener if healthy, redder if many issues)
+    const healthRatio = (sp.cat.inactiveCount + sp.cat.yoyInactiveCount * 0.5) / Math.max(1, sp.cat.asins.length);
+    const r = 1.0;
+    const g = 0.85 - healthRatio * 0.45;
+    const b = 0.55 - healthRatio * 0.45;
+    sunColors[i*3] = r; sunColors[i*3+1] = g; sunColors[i*3+2] = b;
+    sunSizes[i] = sp.sunSize * 8; // visual sprite size
+  }
+  const sunGeom = new THREE.BufferGeometry();
+  sunGeom.setAttribute('position', new THREE.BufferAttribute(sunPos, 3));
+  sunGeom.setAttribute('color', new THREE.BufferAttribute(sunColors.slice(), 3));
+  sunGeom.setAttribute('size', new THREE.BufferAttribute(sunSizes, 1));
+  const sunMat = new THREE.ShaderMaterial({
+    uniforms: { tex: { value: sunTex }, time: { value: 0 } },
+    vertexShader: `
+      attribute float size;
+      varying vec3 vC; varying float vSize;
+      void main() {
+        vC = color; vSize = size;
+        vec4 mv = modelViewMatrix * vec4(position, 1.);
+        gl_PointSize = size * (340. / -mv.z);
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: `
+      uniform sampler2D tex; uniform float time;
+      varying vec3 vC; varying float vSize;
+      void main() {
+        vec4 t = texture2D(tex, gl_PointCoord);
+        if (t.a < 0.01) discard;
+        // pulse + flicker
+        float pulse = 0.88 + 0.12 * sin(time * 1.2 + vSize);
+        vec3 col = vC * pulse + vec3(0.4) * smoothstep(0.0, 0.15, t.a);
+        gl_FragColor = vec4(col, t.a);
+      }`,
+    vertexColors: true,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const suns = new THREE.Points(sunGeom, sunMat);
+  scene.add(suns);
+
+  // ===== Category name labels (sprites) =====
+  function makeLabelSprite(text) {
+    const c = document.createElement('canvas'); c.width = 512; c.height = 96;
+    const cx = c.getContext('2d');
+    cx.font = 'bold 36px "JetBrains Mono", monospace';
+    cx.fillStyle = 'rgba(180, 200, 240, 0.95)';
+    cx.textAlign = 'center';
+    cx.textBaseline = 'middle';
+    cx.shadowColor = 'rgba(0,0,0,0.85)';
+    cx.shadowBlur = 8;
+    cx.fillText(text.toUpperCase(), 256, 48);
+    const t = new THREE.CanvasTexture(c);
+    t.minFilter = THREE.LinearFilter;
+    const m = new THREE.SpriteMaterial({ map: t, transparent: true, opacity: 0.85, depthWrite: false });
+    const s = new THREE.Sprite(m);
+    return s;
+  }
+  const labels = [];
+  for (const sp of sunPositions) {
+    const lbl = makeLabelSprite(sp.cat.name);
+    lbl.position.set(sp.x, sp.y + sp.sunSize * 2 + 10, sp.z);
+    lbl.scale.set(40, 7.5, 1);
+    scene.add(lbl);
+    labels.push(lbl);
+  }
+
+  // ===== Orbit rings around each sun (subtle, hint at planetary system) =====
+  const ringGroup = new THREE.Group();
+  for (const sp of sunPositions) {
+    const nRings = 2;
+    for (let r = 1; r <= nRings; r++) {
+      const radius = sp.sunSize * (2.5 + r * 2.5);
+      const ringGeom = new THREE.RingGeometry(radius - 0.06, radius + 0.06, 64);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: 0x3a4a78, side: THREE.DoubleSide, transparent: true, opacity: 0.10
+      });
+      const ring = new THREE.Mesh(ringGeom, ringMat);
+      ring.position.set(sp.x, sp.y, sp.z);
+      ring.rotation.x = Math.PI / 2 + (Math.random() - 0.5) * 0.5;
+      ring.rotation.y = (Math.random() - 0.5) * 0.5;
+      ringGroup.add(ring);
+    }
+  }
+  scene.add(ringGroup);
+
+  // ===== Hover halo =====
+  const halo = new THREE.Mesh(
+    new THREE.RingGeometry(2.5, 3.6, 32),
+    new THREE.MeshBasicMaterial({ color: 0x00e5c8, side: THREE.DoubleSide, transparent: true, opacity: 0.85, depthWrite: false })
+  );
+  halo.visible = false;
+  scene.add(halo);
+
+  // ===== Orbit controls =====
+  let phi = Math.PI / 2.3, theta = Math.PI * 0.5, radius = 540;
+  let targetPhi = phi, targetTheta = theta, targetRadius = radius;
+  let targetCx = 0, targetCy = 0, targetCz = 0;
+  let cx = 0, cy = 0, cz = 0;
+  let isDragging = false, lastX, lastY, autoRotate = false;
+
+  function updateCamera() {
+    const x = radius * Math.sin(phi) * Math.cos(theta);
+    const y = radius * Math.cos(phi);
+    const z = radius * Math.sin(phi) * Math.sin(theta);
+    camera.position.set(cx + x, cy + y, cz + z);
+    camera.lookAt(cx, cy, cz);
+  }
+  updateCamera();
+
+  canvas.addEventListener('mousedown', e => {
+    isDragging = true; lastX = e.clientX; lastY = e.clientY;
+    canvas.classList.add('dragging');
+  });
+  window.addEventListener('mouseup', () => {
+    isDragging = false; canvas.classList.remove('dragging');
+  });
+  window.addEventListener('mousemove', e => {
+    if (isDragging) {
+      const dx = e.clientX - lastX, dy = e.clientY - lastY;
+      targetTheta -= dx * 0.005;
+      targetPhi = Math.max(0.12, Math.min(Math.PI - 0.12, targetPhi - dy * 0.005));
+      lastX = e.clientX; lastY = e.clientY;
+    }
+  });
+  canvas.addEventListener('touchstart', e => {
+    if (e.touches.length === 1) { isDragging = true; lastX = e.touches[0].clientX; lastY = e.touches[0].clientY; }
+  });
+  canvas.addEventListener('touchmove', e => {
+    if (e.touches.length === 1 && isDragging) {
+      e.preventDefault();
+      const dx = e.touches[0].clientX - lastX, dy = e.touches[0].clientY - lastY;
+      targetTheta -= dx * 0.005;
+      targetPhi = Math.max(0.12, Math.min(Math.PI - 0.12, targetPhi - dy * 0.005));
+      lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
+    }
+  }, { passive: false });
+  canvas.addEventListener('touchend', () => { isDragging = false; });
+  canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    targetRadius = Math.max(15, Math.min(900, targetRadius + e.deltaY * 0.4));
+  }, { passive: false });
+
+  // ===== Raycaster for hover/click on suns and planets =====
+  const raycaster = new THREE.Raycaster();
+  raycaster.params.Points.threshold = 4;
+  const mouseV = new THREE.Vector2();
+  let hoverType = null;  // 'sun' | 'planet' | null
+  let hoverIdx = -1;
+  let focusedSunIdx = -1;
+
+  canvas.addEventListener('mousemove', e => {
+    if (isDragging) { tip.style.display = 'none'; halo.visible = false; return; }
+    const rect = canvas.getBoundingClientRect();
+    mouseV.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    mouseV.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(mouseV, camera);
+
+    // Check suns first (only in galaxy view, or when zoomed back out)
+    if (focusedSunIdx < 0) {
+      raycaster.params.Points.threshold = 8;
+      const sunHits = raycaster.intersectObject(suns);
+      if (sunHits.length > 0) {
+        const sIdx = sunHits[0].index;
+        const sp = sunPositions[sIdx];
+        hoverType = 'sun'; hoverIdx = sIdx;
+        halo.position.copy(sunHits[0].point);
+        halo.lookAt(camera.position);
+        const hs = sp.sunSize * 1.6;
+        halo.scale.set(hs, hs, hs);
+        halo.material.color.setHex(0xffd866);
+        halo.visible = true;
+
+        const cat = sp.cat;
+        const totalSales = cat.totalSales;
+        tip.innerHTML = `
+          <div class="tt-id" style="color:#ffd866">☀ ${cat.name}</div>
+          <div class="tt-t">${cat.asins.length} ASINs · ${cat.inactiveCount} currently Inactive · ${cat.yoyInactiveCount} YoY-flagged</div>
+          <div class="tt-row"><span>Total Sales YTD</span><span>${F.k(totalSales)}</span></div>
+          <div class="tt-row"><span>Active</span><span style="color:var(--gn)">${cat.asins.length - cat.inactiveCount}</span></div>
+          <div class="tt-row"><span>Inactive</span><span style="color:var(--rd)">${cat.inactiveCount}</span></div>
+          <div class="tt-cta">↑ Click sun to enter system</div>`;
+        showTip(e, rect);
+        return;
+      }
+    }
+
+    // Check planets (any view)
+    raycaster.params.Points.threshold = focusedSunIdx >= 0 ? 2.5 : 1.6;
+    const planetHits = raycaster.intersectObject(planets);
+    if (planetHits.length > 0) {
+      // Filter by visibility & by focused sun if any
+      let pick = null;
+      for (const it of planetHits) {
+        if (sizes[it.index] <= 0) continue; // hidden when other suns are scaled away
+        if (focusedSunIdx >= 0 && sunIdxOf[it.index] !== focusedSunIdx) continue;
+        pick = it; break;
+      }
+      if (!pick) { tip.style.display = 'none'; halo.visible = false; hoverType = null; return; }
+      hoverType = 'planet'; hoverIdx = pick.index;
+      const a = DATA.asins[hoverIdx];
+      halo.position.set(positions[hoverIdx*3], positions[hoverIdx*3+1], positions[hoverIdx*3+2]);
+      halo.lookAt(camera.position);
+      const hs = sizes[hoverIdx] * 0.16;
+      halo.scale.set(hs, hs, hs);
+      halo.material.color.setHex(0x00e5c8);
+      halo.visible = true;
+      tip.innerHTML = `
+        <div class="tt-id">${a.id} <span class="pill ${a._latestStatus}">${a._latestStatus==='A'?'Act':a._latestStatus==='I'?'Inact':'Unk'}</span></div>
+        <div class="tt-t">${(a.t||'').slice(0,70)}${a.t&&a.t.length>70?'…':''}</div>
+        <div class="tt-row"><span>Cat</span><span>${a.c||'—'}/${a.sc||'—'}</span></div>
+        <div class="tt-row"><span>T-Sales YTD</span><span>${F.k(a._ytd26[4])}</span></div>
+        <div class="tt-row"><span>Spend YTD</span><span>${F.k(a._ytd26[0])}</span></div>
+        <div class="tt-row"><span>ROAS</span><span>${a._roas26.toFixed(2)}x</span></div>
+        <div class="tt-row"><span>Orders</span><span>${F.n(a._ytd26[1])}</span></div>
+        ${a.yi.length?`<div class="tt-row"><span style="color:var(--or)">YoY Inactive</span><span style="color:var(--or)">${a.yi.map(m=>MONTH_LABELS_SHORT[m]).join(', ')}</span></div>`:''}
+        <div class="tt-cta">↑ Click to open detail</div>`;
+      showTip(e, rect);
+      return;
+    }
+
+    tip.style.display = 'none'; halo.visible = false; hoverType = null;
+  });
+  canvas.addEventListener('mouseleave', () => { tip.style.display = 'none'; halo.visible = false; hoverType = null; });
+
+  function showTip(e, rect) {
+    tip.style.display = 'block';
+    let L = e.clientX - rect.left + 14, T = e.clientY - rect.top + 14;
+    tip.style.left = L + 'px'; tip.style.top = T + 'px';
+    const tR = tip.getBoundingClientRect();
+    if (L + tR.width > rect.width) tip.style.left = (e.clientX - rect.left - tR.width - 14) + 'px';
+    if (T + tR.height > rect.height) tip.style.top = (e.clientY - rect.top - tR.height - 14) + 'px';
+  }
+
+  canvas.addEventListener('click', () => {
+    if (hoverType === 'sun') {
+      focusOnSun(hoverIdx);
+    } else if (hoverType === 'planet') {
+      openDrawer(DATA.asins[hoverIdx].id, false);
+    }
+  });
+
+  function focusOnSun(sIdx) {
+    focusedSunIdx = sIdx;
+    const sp = sunPositions[sIdx];
+    // Recompute planet positions with this sun in focus
+    const r = computePlanetPositions(sIdx);
+    const newPositions = r.positions;
+    const newSizes = r.sizes;
+
+    // Smooth animate position + size
+    const startPos = new Float32Array(positions);
+    const startSizes = new Float32Array(sizes);
+    let step = 0;
+    const steps = 40;
+    (function anim() {
+      step++;
+      const t = Math.min(1, step / steps);
+      const e = 1 - Math.pow(1 - t, 3);
+      for (let i = 0; i < positions.length; i++) {
+        positions[i] = startPos[i] + (newPositions[i] - startPos[i]) * e;
+      }
+      for (let i = 0; i < sizes.length; i++) {
+        sizes[i] = startSizes[i] + (newSizes[i] - startSizes[i]) * e;
+      }
+      geom.attributes.position.needsUpdate = true;
+      geom.attributes.size.needsUpdate = true;
+      if (step < steps) requestAnimationFrame(anim);
+    })();
+
+    // Hide other suns visually
+    for (let i = 0; i < N_CATS; i++) {
+      sunSizes[i] = i === sIdx ? sunPositions[i].sunSize * 8 * 2.2 : 0.001;
+    }
+    sunGeom.attributes.size.needsUpdate = true;
+
+    // Hide non-focused labels
+    for (let i = 0; i < labels.length; i++) {
+      labels[i].visible = (i === sIdx);
+      if (i === sIdx) {
+        labels[i].position.set(0, sp.sunSize * 2 * 5.5 + 25, 0);
+        labels[i].scale.set(60, 11, 1);
+      }
+    }
+
+    // Hide rings for non-focused systems (simple approach: dim the group)
+    ringGroup.visible = false;
+
+    // Camera: pan to the sun, zoom in
+    targetCx = 0; targetCy = 0; targetCz = 0; // we move sun to origin via positions
+    targetRadius = sp.sunSize * 50 + 60;
+    targetPhi = Math.PI / 2.3;
+    targetTheta = Math.PI * 0.4;
+
+    // Update UI
+    $('#constSubtitle').textContent = `entered ${sp.cat.name} system · ${sp.cat.asins.length} ASINs orbiting · click any planet for detail`;
+    $('#constInfo').innerHTML = `<b>${sp.cat.asins.length.toLocaleString()}</b><div class="si">ASINs in ${sp.cat.name}</div>`;
+    $('#backBtn').style.display = 'inline-flex';
+  }
+
+  function exitFocus() {
+    focusedSunIdx = -1;
+    const r = computePlanetPositions(null);
+    const newPositions = r.positions;
+    const newSizes = r.sizes;
+    const startPos = new Float32Array(positions);
+    const startSizes = new Float32Array(sizes);
+    let step = 0;
+    const steps = 40;
+    (function anim() {
+      step++;
+      const t = Math.min(1, step / steps);
+      const e = 1 - Math.pow(1 - t, 3);
+      for (let i = 0; i < positions.length; i++) positions[i] = startPos[i] + (newPositions[i] - startPos[i]) * e;
+      for (let i = 0; i < sizes.length; i++) sizes[i] = startSizes[i] + (newSizes[i] - startSizes[i]) * e;
+      geom.attributes.position.needsUpdate = true;
+      geom.attributes.size.needsUpdate = true;
+      if (step < steps) requestAnimationFrame(anim);
+    })();
+
+    for (let i = 0; i < N_CATS; i++) sunSizes[i] = sunPositions[i].sunSize * 8;
+    sunGeom.attributes.size.needsUpdate = true;
+    for (let i = 0; i < labels.length; i++) {
+      labels[i].visible = true;
+      labels[i].position.set(sunPositions[i].x, sunPositions[i].y + sunPositions[i].sunSize * 2 + 10, sunPositions[i].z);
+      labels[i].scale.set(40, 7.5, 1);
+    }
+    ringGroup.visible = true;
+    targetCx = 0; targetCy = 0; targetCz = 0;
+    targetRadius = 540;
+    targetPhi = Math.PI / 2.3; targetTheta = Math.PI * 0.5;
+    $('#constSubtitle').textContent = `galactic overview · ${N_CATS} categories · drag to rotate · click any sun to zoom into its system`;
+    $('#constInfo').innerHTML = `<b>${N_CATS}</b><div class="si">category suns</div>`;
+    $('#backBtn').style.display = 'none';
+  }
+  window.exitFocus = exitFocus;
+
+  // ===== Resize =====
+  window.addEventListener('resize', () => {
+    W = wrap.clientWidth; H = wrap.clientHeight;
+    camera.aspect = W / H; camera.updateProjectionMatrix();
+    renderer.setSize(W, H, false);
+  });
+
+  // ===== Animate =====
+  let fc = 0;
+  const tick = () => {
+    fc++;
+    if (autoRotate && !isDragging) targetTheta += 0.0022;
+    phi += (targetPhi - phi) * 0.10;
+    theta += (targetTheta - theta) * 0.10;
+    radius += (targetRadius - radius) * 0.10;
+    cx += (targetCx - cx) * 0.10;
+    cy += (targetCy - cy) * 0.10;
+    cz += (targetCz - cz) * 0.10;
+    updateCamera();
+    if (halo.visible) halo.material.opacity = 0.55 + 0.35 * Math.sin(fc * 0.13);
+    sunMat.uniforms.time.value = fc * 0.04;
+    bgMat.uniforms.time.value = fc * 0.01;
+    renderer.render(scene, camera);
+    requestAnimationFrame(tick);
+  };
+  tick();
+
+  setTimeout(() => $('#constLoading').classList.add('hidden'), 200);
+
+  CONST_3D = {
+    scene, camera, renderer, planets, geom, halo, baseColors, sizes, positions, sunIdxOf,
+    visibleSet: null,
+    sunPositions, categories,
+    setRotate: (b) => { autoRotate = b; },
+    resetView: () => {
+      if (focusedSunIdx >= 0) exitFocus();
+      else {
+        targetPhi = Math.PI / 2.3; targetTheta = Math.PI * 0.5; targetRadius = 540;
+        targetCx = 0; targetCy = 0; targetCz = 0;
+      }
+    },
+  };
+}
+
+function toggleAutoRotate() {
+  const b = $('#rotBtn');
+  const n = !b.classList.contains('active');
+  b.classList.toggle('active', n);
+  if (CONST_3D) CONST_3D.setRotate(n);
+}
+function resetCamera() { if (CONST_3D) CONST_3D.resetView(); }
+
+function refreshConstellation() {
+  if (!CONST_3D) return;
+  const v = new Set();
+  for (const a of FILTERED) v.add(DATA.asins.indexOf(a));
+  CONST_3D.visibleSet = v;
+  const colors = CONST_3D.geom.attributes.color.array;
+  const base = CONST_3D.baseColors;
+  for (let i = 0; i < DATA.asins.length; i++) {
+    if (v.has(i)) {
+      colors[i*3] = base[i*3]; colors[i*3+1] = base[i*3+1]; colors[i*3+2] = base[i*3+2];
+    } else {
+      colors[i*3] = 0.04; colors[i*3+1] = 0.06; colors[i*3+2] = 0.10;
+    }
+  }
+  CONST_3D.geom.attributes.color.needsUpdate = true;
+}
+
+function openDrawer(id,isParent){
+  let a;
+  if(isParent){const ch=DATA.asins.filter(x=>(x.pa||x.id)===id);a=rollupParents(ch)[0];}
+  else a=DATA.asins.find(x=>x.id===id);
+  if(!a)return;
+  $('#drwr').innerHTML=drawerHTML(a,isParent);
+  $('#drwr').classList.add('open'); $('#drwrBg').classList.add('open');
+  $('#drwr').scrollTo({top:0});
+  setTimeout(()=>buildQtySpark(a),50);
+}
+function closeDrawer(){$('#drwr').classList.remove('open');$('#drwrBg').classList.remove('open');}
+$('#drwrBg').addEventListener('click',closeDrawer);
+
+function drawerHTML(a,isParent){
+  const hb=a.st.split('').map((s,i)=>{const d=DATA.meta.status_dates[i];const q=a.q[i];return `<div class="hb-l-cell ${s}" data-d="${d}" data-q="qty: ${q}"></div>`;}).join('');
+  const monthRows=MONTH_KEYS.map(m=>{
+    const v26=a.b[m+'26']||[0,0,0,0,0,0], v25=a.b[m+'25']||[0,0,0,0,0,0];
+    const flag=a.yi.includes(m);
+    const td=(c,p)=>{if(p===0&&c===0)return'<td>—</td>';const d=F.dp(c,p);return `<td>${F.k0(c)} <span class="delta ${d.c}">${d.t}</span></td>`;};
+    const tdN=(c,p)=>{if(p===0&&c===0)return'<td>—</td>';const d=F.dp(c,p);return `<td>${F.n(c)} <span class="delta ${d.c}">${d.t}</span></td>`;};
+    return `<tr class="${flag?'yoyi-row':''}"><td>${MONTH_LABELS[m]}${flag?' <span class="pill flag">YoYi</span>':''}</td>${td(v26[0],v25[0])}${tdN(v26[1],v25[1])}${td(v26[2],v25[2])}${tdN(v26[3],v25[3])}${td(v26[4],v25[4])}${tdN(v26[5],v25[5])}</tr>`;
+  }).join('');
+  const ytd=(c,p)=>`<td>${F.k0(c)} <span class="delta ${F.dp(c,p).c}">${F.dp(c,p).t}</span></td>`;
+  const ytdN=(c,p)=>`<td>${F.n(c)} <span class="delta ${F.dp(c,p).c}">${F.dp(c,p).t}</span></td>`;
+  let sibHTML='';
+  if(!isParent&&a.pa){
+    const sibs=DATA.asins.filter(x=>x.pa===a.pa&&x.id!==a.id).slice(0,12);
+    if(sibs.length){
+      sibHTML=`<div class="drwr-sec"><h4>Parent Family · ${a.pa} (${sibs.length+1} children)</h4>
+        <table class="yoy-tbl"><thead><tr><th>Child ASIN</th><th>Status</th><th>T-Sales YTD</th><th>Spend YTD</th><th>ROAS</th></tr></thead>
+        <tbody>${sibs.map(s=>`<tr><td><a style="color:var(--cy);cursor:pointer;text-decoration:underline" onclick="openDrawer('${s.id}',false)">${s.id}</a></td><td><span class="pill ${s._latestStatus}">${s._latestStatus==='A'?'Act':'Inact'}</span></td><td>${F.k(s._ytd26[4])}</td><td>${F.k(s._ytd26[0])}</td><td>${s._roas26.toFixed(2)}x</td></tr>`).join('')}</tbody></table></div>`;
+    }
+  }
+  return `
+    <div class="drwr-h">
+      <div>
+        <div class="id">${a.id} ${isParent?'<span class="pa">parent rollup · '+a._childCount+' children</span>':a.pa?`<span class="pa">parent: ${a.pa}</span>`:''}</div>
+        <div class="ttl">${a.t||'—'}</div>
+        <div class="meta">
+          <span class="pill ${a._latestStatus}">${a._latestStatus==='A'?'Active':a._latestStatus==='I'?'Inactive':'Mixed'}</span>
+          ${a.yi&&a.yi.length?`<span class="pill flag">YoYi: ${a.yi.map(m=>MONTH_LABELS_SHORT[m]).join(', ')}</span>`:''}
+          ${a._justInactive?'<span class="pill flag">Just Flipped</span>':''}
+          ${a._recovered?'<span class="pill" style="background:rgba(96,165,250,.18);color:var(--bl)">Recovered</span>':''}
+          · ${a.c||''} / ${a.sc||''} · ${a.f||'—'} · ${a.o||'—'}
+        </div>
+      </div>
+      <button class="drwr-close" onclick="closeDrawer()">×</button>
+    </div>
+    <div class="drwr-b">
+      <div class="drwr-sec">
+        <h4>YTD Headline · 2026 vs 2025</h4>
+        <table class="yoy-tbl"><thead><tr><th></th><th>Spend</th><th>Paid Ord</th><th>Ad Sales</th><th>Sessions</th><th>T-Sales</th><th>T-Orders</th></tr></thead>
+        <tbody><tr><td><b>YTD '26</b></td>${ytd(a._ytd26[0],a._ytd25[0])}${ytdN(a._ytd26[1],a._ytd25[1])}${ytd(a._ytd26[2],a._ytd25[2])}${ytdN(a._ytd26[3],a._ytd25[3])}${ytd(a._ytd26[4],a._ytd25[4])}${ytdN(a._ytd26[5],a._ytd25[5])}</tr>
+        <tr><td><b style="color:var(--t3)">YTD '25</b></td><td style="color:var(--t3)">${F.k0(a._ytd25[0])}</td><td style="color:var(--t3)">${F.n(a._ytd25[1])}</td><td style="color:var(--t3)">${F.k0(a._ytd25[2])}</td><td style="color:var(--t3)">${F.n(a._ytd25[3])}</td><td style="color:var(--t3)">${F.k0(a._ytd25[4])}</td><td style="color:var(--t3)">${F.n(a._ytd25[5])}</td></tr>
+        </tbody></table>
+      </div>
+      <div class="drwr-sec">
+        <h4>Monthly Breakdown · 2026 vs 2025</h4>
+        <table class="yoy-tbl"><thead><tr><th>Month</th><th>Spend</th><th>Paid Ord</th><th>Ad Sales</th><th>Sessions</th><th>T-Sales</th><th>T-Orders</th></tr></thead>
+        <tbody>${monthRows}</tbody></table>
+      </div>
+      <div class="drwr-sec">
+        <h4>Status Heartbeat · 18-Week</h4>
+        <div class="hb-large">${hb}</div>
+        <div style="font:500 9px var(--mo);color:var(--t3);margin-top:8px">First: ${DATA.meta.status_dates[0]} · Latest: ${DATA.meta.status_dates[DATA.meta.status_dates.length-1]}</div>
+      </div>
+      <div class="drwr-sec">
+        <h4>Inventory Qty · 18-Week</h4>
+        <div class="qty-spark"><canvas id="qtySpark"></canvas></div>
+      </div>
+      ${!isParent?`<div class="drwr-sec">
+        <h4>Master Attributes</h4>
+        <div class="attr-grid">
+          <div class="attr-row"><span class="al">Child ASIN</span><span class="av">${a.id}</span></div>
+          <div class="attr-row"><span class="al">Parent ASIN</span><span class="av">${a.pa||'—'}</span></div>
+          <div class="attr-row"><span class="al">Seller SKU</span><span class="av">${a.ss||'—'}</span></div>
+          <div class="attr-row"><span class="al">Internal SKU</span><span class="av">${a.sk||'—'}</span></div>
+          <div class="attr-row"><span class="al">Parent SKU</span><span class="av">${a.ps||'—'}</span></div>
+          <div class="attr-row"><span class="al">Category</span><span class="av">${a.c||'—'}</span></div>
+          <div class="attr-row"><span class="al">Subcategory</span><span class="av">${a.sc||'—'}</span></div>
+          <div class="attr-row"><span class="al">Ownership</span><span class="av">${a.o||'—'}</span></div>
+          <div class="attr-row"><span class="al">Fulfillment</span><span class="av">${a.f||'—'}</span></div>
+          <div class="attr-row"><span class="al">Price</span><span class="av">$${a.p?a.p.toFixed(2):'—'}</span></div>
+          <div class="attr-row"><span class="al">Listed Date</span><span class="av">${a.od||'—'} ${a._daysOpen?`(${a._daysOpen}d)`:''}</span></div>
+          <div class="attr-row"><span class="al">Remark</span><span class="av">${a.r||'—'}</span></div>
+        </div>
+      </div>`:''}
+      ${sibHTML}
+    </div>`;
+}
+function buildQtySpark(a){
+  const cv=$('#qtySpark'); if(!cv||typeof Chart==='undefined')return;
+  new Chart(cv,{type:'line',data:{labels:DATA.meta.qty_dates.map(d=>d.slice(5)),datasets:[{data:a.q,borderColor:'#00e5c8',backgroundColor:'rgba(0,229,200,.12)',tension:.25,fill:true,pointRadius:2.5,pointBackgroundColor:a.q.map(v=>v===0?'#ff5b5b':'#00e5c8'),borderWidth:1.8}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a2440',titleColor:'#eef2ff',bodyColor:'#b0bfe0',padding:8,titleFont:{family:'JetBrains Mono'},bodyFont:{family:'JetBrains Mono',size:10}}},
+      scales:{x:{ticks:{color:'#6b7fa3',font:{family:'JetBrains Mono',size:8}},grid:{display:false}},y:{ticks:{color:'#6b7fa3',font:{family:'JetBrains Mono',size:8},callback:v=>v>=1000?(v/1000).toFixed(0)+'K':v},grid:{color:'#1c284422'}}}}
+  });
+}
+
+function openFilterModal(){renderConditions();renderSavedList();$('#filterModal').classList.add('open');}
+function closeFilterModal(){$('#filterModal').classList.remove('open');}
+function clearAllConditions(){STATE.conditions=[];$$('.tb-preset').forEach(b=>b.classList.remove('active'));$$('.yc').forEach(c=>c.classList.remove('active'));applyFilters();renderConditions();}
+function applyConditions(){applyFilters();closeFilterModal();}
+
+function renderConditions(){
+  const list=$('#condList'); if(!list)return;
+  if(!STATE.conditions.length){list.innerHTML='<div style="background:var(--cd2);border:1px dashed var(--bd);border-radius:8px;padding:20px;text-align:center;color:var(--t3);font:500 11px var(--mo);margin-bottom:7px">No conditions — click + Add Filter or pick a preset</div>';refreshFilterCount();return;}
+  list.innerHTML=STATE.conditions.map((c,i)=>{
+    const def=METRIC_DEFS[c.metric];
+    const pL=def&&def.noPeriod?'':`<span class="cond-period">in ${periodLabel(c.period)}</span>`;
+    return `<div class="cond-row">
+      <div class="cond-num">${i+1}</div>
+      <div class="cond-metric">${def?def.label:c.metric}</div>
+      <div class="cond-op">${c.op}</div>
+      <div class="cond-val">${c.val}</div>
+      ${pL}
+      <button class="cond-x" onclick="removeCondition(${i})">×</button>
+    </div>`;
+  }).join('');
+  refreshFilterCount();
+}
+function removeCondition(i){
+  const c=STATE.conditions[i];
+  if(c&&c._presetId)$$('.tb-preset').forEach(b=>b.classList.remove('active'));
+  STATE.conditions.splice(i,1);
+  renderConditions(); applyFilters();
+}
+
+function openAddCondModal(){
+  $('#acMetric').innerHTML=Object.entries(METRIC_DEFS).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('');
+  $('#acPeriod').innerHTML=PERIOD_OPTS.map(p=>`<option value="${p.id}">${p.label}</option>`).join('');
+  updateAcOpForMetric();
+  $('#acMetric').onchange=updateAcOpForMetric;
+  $('#addCondModal').classList.add('open');
+}
+function updateAcOpForMetric(){
+  const k=$('#acMetric').value; const def=METRIC_DEFS[k]; if(!def)return;
+  if(def.type==='sel'){
+    $('#acOp').innerHTML='<option value="=">=</option><option value="!=">≠</option>';
+    const opts=typeof def.options==='function'?def.options():def.options;
+    $('#acValHolder').innerHTML=`<select id="acVal" style="background:var(--sf);border:1px solid var(--bd);color:var(--t1);padding:9px 12px;border-radius:6px;font:500 12px var(--mo);outline:none;width:100%;">${opts.map(o=>`<option>${o}</option>`).join('')}</select>`;
+  } else {
+    $('#acOp').innerHTML='<option>></option><option>>=</option><option><</option><option><=</option><option>=</option><option>!=</option>';
+    $('#acValHolder').innerHTML='<input id="acVal" placeholder="e.g., 1.5" style="background:var(--sf);border:1px solid var(--bd);color:var(--t1);padding:9px 12px;border-radius:6px;font:500 12px var(--mo);outline:none;width:100%;">';
+  }
+  $('#acPeriodRow').style.display=def.noPeriod?'none':'grid';
+}
+function closeAddCondModal(){$('#addCondModal').classList.remove('open');}
+function saveNewCondition(){
+  const metric=$('#acMetric').value; const def=METRIC_DEFS[metric];
+  const op=$('#acOp').value; const valEl=$('#acVal');
+  let val=valEl.tagName==='SELECT'?valEl.value:(def.type==='num'?parseFloat(valEl.value):valEl.value);
+  if(def.type==='num'&&isNaN(val)){valEl.style.borderColor='var(--rd)';return;}
+  const period=def.noPeriod?'na':$('#acPeriod').value;
+  STATE.conditions.push({id:'c_'+Date.now(),metric,op,val,period});
+  closeAddCondModal(); renderConditions();
+}
+
+function loadSavedPresets(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');}catch(e){return[];}}
+function saveSavedPresets(arr){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(arr));}catch(e){}}
+function renderSavedList(){
+  const list=loadSavedPresets(); const el=$('#savedList'); if(!el)return;
+  if(!list.length){el.classList.remove('has-items');el.innerHTML='No saved presets yet';return;}
+  el.classList.add('has-items');
+  el.innerHTML=list.map((p,i)=>`<div class="saved-item">
+    <div><span class="saved-item-name">${p.name}</span> <span style="color:var(--t3);font:500 10px var(--mo)">· ${p.conds.length} conditions</span></div>
+    <div class="saved-item-actions">
+      <button class="saved-act apply" onclick="applySavedPreset(${i})">Apply</button>
+      <button class="saved-act del" onclick="deleteSavedPreset(${i})">Delete</button>
+    </div>
+  </div>`).join('');
+}
+function saveCurrentPreset(){
+  const name=$('#saveName').value.trim();
+  if(!name){$('#saveName').style.borderColor='var(--rd)';return;}
+  if(!STATE.conditions.length)return;
+  const list=loadSavedPresets();
+  list.push({name,conds:STATE.conditions.map(c=>({...c}))});
+  saveSavedPresets(list); $('#saveName').value=''; renderSavedList();
+}
+function applySavedPreset(i){const list=loadSavedPresets();if(!list[i])return;STATE.conditions=list[i].conds.map(c=>({...c}));applyFilters();renderConditions();}
+function deleteSavedPreset(i){const list=loadSavedPresets();list.splice(i,1);saveSavedPresets(list);renderSavedList();}
+
+function openDateModal(){
+  const mkCell=(mkey,isC)=>{const yr=isC?'2025':'2026';const sel=STATE.primaryMonths.includes(mkey);return `<div class="dm-cell ${sel?(isC?'compare':'selected'):''}" data-mkey="${mkey}" onclick="toggleDateCell('${mkey}')">${MONTH_LABELS[mkey]}<span class="dm-y">${yr}</span></div>`;};
+  $('#dmPrimary').innerHTML=MONTH_KEYS.map(m=>mkCell(m,false)).join('');
+  $('#dmCompare').innerHTML=MONTH_KEYS.map(m=>mkCell(m,true)).join('');
+  const arrEq=(a,b)=>{if(a.length!==b.length)return false;for(let i=0;i<a.length;i++)if(a[i]!==b[i])return false;return true;};
+  $('#dmQuick').innerHTML=`
+    <button class="${arrEq(STATE.primaryMonths,['jan','feb','mar','apr'])?'active':''}" onclick="setQuickPeriod(['jan','feb','mar','apr'])">YTD (Jan→Apr)</button>
+    <button class="${arrEq(STATE.primaryMonths,['jan'])?'active':''}" onclick="setQuickPeriod(['jan'])">January only</button>
+    <button class="${arrEq(STATE.primaryMonths,['feb'])?'active':''}" onclick="setQuickPeriod(['feb'])">February only</button>
+    <button class="${arrEq(STATE.primaryMonths,['mar'])?'active':''}" onclick="setQuickPeriod(['mar'])">March only</button>
+    <button class="${arrEq(STATE.primaryMonths,['apr'])?'active':''}" onclick="setQuickPeriod(['apr'])">April only</button>
+    <button class="${arrEq(STATE.primaryMonths,['mar','apr'])?'active':''}" onclick="setQuickPeriod(['mar','apr'])">Last 2 months</button>
+    <button class="${arrEq(STATE.primaryMonths,['feb','mar','apr'])?'active':''}" onclick="setQuickPeriod(['feb','mar','apr'])">Last 3 months</button>`;
+  const lbl=STATE.primaryMonths.map(m=>MONTH_LABELS_SHORT[m]).join(', ');
+  $('#dmStatus').innerHTML=`Selected: <b style="color:var(--cy)">${lbl} 2026</b> vs <b style="color:var(--or)">${lbl} 2025</b>`;
+  $('#dateModal').classList.add('open');
+}
+function closeDateModal(){$('#dateModal').classList.remove('open');}
+function toggleDateCell(mkey){
+  if(STATE.primaryMonths.includes(mkey)){if(STATE.primaryMonths.length>1)STATE.primaryMonths=STATE.primaryMonths.filter(m=>m!==mkey);}
+  else{STATE.primaryMonths.push(mkey);STATE.primaryMonths.sort((a,b)=>MONTH_KEYS.indexOf(a)-MONTH_KEYS.indexOf(b));}
+  openDateModal();
+}
+function setQuickPeriod(m){STATE.primaryMonths=m.slice();openDateModal();}
+function applyDateRange(){
+  for(const a of DATA.asins){
+    a._ytd26=sumBiz(a,STATE.primaryMonths,'26');
+    a._ytd25=sumBiz(a,STATE.primaryMonths,'25');
+    a._roas26=a._ytd26[0]>0?a._ytd26[2]/a._ytd26[0]:0;
+    a._roas25=a._ytd25[0]>0?a._ytd25[2]/a._ytd25[0]:0;
+    a._yoyTSDelta=a._ytd26[4]-a._ytd25[4];
+    a._yoyTSPct=a._ytd25[4]>0?((a._ytd26[4]-a._ytd25[4])/a._ytd25[4])*100:null;
+  }
+  const lbl=STATE.primaryMonths.length===4?'YTD (Jan–Apr)':STATE.primaryMonths.map(m=>MONTH_LABELS_SHORT[m]).join('+');
+  $('#dateBtnLabel').textContent=lbl;
+  applyFilters(); closeDateModal();
+}
+
+init();
+</script>
+</body>
+</html>
