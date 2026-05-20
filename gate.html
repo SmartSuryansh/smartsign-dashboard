@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SmartSign — Amazon Ads Dashboard Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0c10;
+    --surface: #12151c;
+    --surface-2: #1a1e28;
+    --border: rgba(255,255,255,0.08);
+    --border-focus: rgba(255,165,0,0.6);
+    --text: #e8eaf0;
+    --text-muted: #6b7280;
+    --accent: #ff9900;
+    --accent-dim: rgba(255,153,0,0.12);
+    --accent-glow: rgba(255,153,0,0.25);
+    --danger: #ef4444;
+    --danger-dim: rgba(239,68,68,0.12);
+    --success: #22c55e;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+
+  /* subtle grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .card {
+    position: relative;
+    z-index: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+
+  .logo-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 1.75rem;
+  }
+
+  .logo-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--accent-dim);
+    border: 1px solid rgba(255,153,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .logo-text {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+
+  .logo-text span {
+    color: var(--accent);
+  }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+
+  .subtitle {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+    line-height: 1.5;
+  }
+
+  .lock-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 22px;
+  }
+
+  .input-group {
+    position: relative;
+    margin-bottom: 1rem;
+  }
+
+  .input-group input {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 44px 12px 14px;
+    font-size: 14px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+    letter-spacing: 0.05em;
+  }
+
+  .input-group input:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  .toggle-vis {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    font-size: 16px;
+    line-height: 1;
+    transition: color 0.2s;
+  }
+
+  .toggle-vis:hover { color: var(--text); }
+
+  .btn {
+    width: 100%;
+    background: var(--accent);
+    color: #0a0c10;
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    letter-spacing: 0.01em;
+  }
+
+  .btn:hover { opacity: 0.9; }
+  .btn:active { transform: scale(0.98); opacity: 0.85; }
+
+  .error-msg {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    background: var(--danger-dim);
+    border: 1px solid rgba(239,68,68,0.25);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 13px;
+    color: #fca5a5;
+    margin-top: 10px;
+    text-align: left;
+  }
+
+  .error-msg.show { display: flex; }
+
+  .footer {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .footer strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* shake animation on wrong password */
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%      { transform: translateX(-8px); }
+    40%      { transform: translateX(8px); }
+    60%      { transform: translateX(-5px); }
+    80%      { transform: translateX(5px); }
+  }
+
+  .shake { animation: shake 0.4s ease; }
+
+  /* success flash */
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to   { opacity: 0; transform: scale(0.97); }
+  }
+
+  .fade-out { animation: fadeOut 0.3s ease forwards; }
+
+  .success-overlay {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 1rem 0;
+  }
+
+  .success-overlay .check {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(34,197,94,0.15);
+    border: 1px solid rgba(34,197,94,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: var(--success);
+  }
+</style>
+</head>
+<body>
+
+<div class="card" id="gate-card">
+
+  <div class="logo-row">
+    <div class="logo-badge">🎯</div>
+    <span class="logo-text">Smart<span>Sign</span></span>
+  </div>
+
+  <div class="lock-icon">🔒</div>
+
+  <h1>Restricted Access</h1>
+  <p class="subtitle">This dashboard contains confidential Amazon Ads data.<br>Enter your access password to continue.</p>
+
+  <div class="input-group">
+    <input type="password" id="pwd-input" placeholder="Enter password" autocomplete="current-password" />
+    <button class="toggle-vis" id="toggle-btn" title="Show/hide password" aria-label="Toggle password visibility">👁</button>
+  </div>
+
+  <button class="btn" id="unlock-btn">Unlock Dashboard →</button>
+
+  <div class="error-msg" id="error-msg">
+    ⚠️ Incorrect password. Please try again or contact your admin.
+  </div>
+
+  <div class="footer">
+    <strong>SmartSign USA</strong> · Amazon Ads Dashboard Hub<br>
+    For access issues, contact your team admin.
+  </div>
+
+  <!-- success state (shown briefly before redirect) -->
+  <div class="success-overlay" id="success-view">
+    <div class="check">✓</div>
+    <p style="font-size:14px; color: #86efac;">Access granted — loading dashboard…</p>
+  </div>
+
+</div>
+
+<script>
+  /*
+  ============================================================
+    SMARTSIGN PASSWORD GATE
+    Instructions for SmartSuryansh:
+
+    1. Change PASSWORD below to your actual secret.
+    2. Change REDIRECT_URL to the page you want to unlock
+       (e.g. "index.html" or "command_center.html").
+    3. Replace your existing index.html with this file,
+       OR host this as a separate gate.html and link to it.
+
+    ⚠️ Important: This is a "deterrent" lock, not a
+    cryptographic one. For stronger protection, move to
+    Netlify Identity (Option 2 in our plan).
+  ============================================================
+  */
+
+  const PASSWORD    = "SmartAmz";   // ← CHANGE THIS
+  const REDIRECT_URL = "index.html";       // ← CHANGE THIS (or keep if this IS the gate page)
+  const SESSION_KEY  = "ss_dashboard_auth";
+
+  // If already authenticated this session, redirect immediately
+  if (sessionStorage.getItem(SESSION_KEY) === "1") {
+    window.location.replace(REDIRECT_URL);
+  }
+
+  const input   = document.getElementById("pwd-input");
+  const btn     = document.getElementById("unlock-btn");
+  const errMsg  = document.getElementById("error-msg");
+  const card    = document.getElementById("gate-card");
+  const toggle  = document.getElementById("toggle-btn");
+  const success = document.getElementById("success-view");
+
+  toggle.addEventListener("click", () => {
+    const isHidden = input.type === "password";
+    input.type = isHidden ? "text" : "password";
+    toggle.textContent = isHidden ? "🙈" : "👁";
+  });
+
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter") checkPassword();
+  });
+
+  btn.addEventListener("click", checkPassword);
+
+  function checkPassword() {
+    const val = input.value.trim();
+    if (val === PASSWORD) {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      errMsg.classList.remove("show");
+      // show success briefly then redirect
+      card.querySelector("h1").style.display = "none";
+      card.querySelector(".subtitle").style.display = "none";
+      card.querySelector(".lock-icon").style.display = "none";
+      card.querySelector(".input-group").style.display = "none";
+      btn.style.display = "none";
+      card.querySelector(".footer").style.display = "none";
+      success.style.display = "flex";
+      setTimeout(() => window.location.replace(REDIRECT_URL), 1200);
+    } else {
+      errMsg.classList.add("show");
+      card.classList.add("shake");
+      input.value = "";
+      input.focus();
+      card.addEventListener("animationend", () => card.classList.remove("shake"), { once: true });
+    }
+  }
+</script>
+
+</body>
+</html>
