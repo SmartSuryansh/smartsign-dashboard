@@ -234,6 +234,11 @@ tbody tr:hover{background:var(--hv);}
 </style>
 </head>
 <body>
+<script>
+  if (sessionStorage.getItem("ss_dashboard_auth") !== "1") {
+    window.location.replace("gate.html");
+  }
+</script>
 <div class="w">
 <div class="hdr">
   <div class="hdr-l">
