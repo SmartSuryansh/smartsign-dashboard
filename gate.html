@@ -251,6 +251,21 @@
 </style>
 </head>
 <body>
+ <!-- Netlify Identity Auth Guard -->
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script>
+  window.netlifyIdentity = window.netlifyIdentity || {};
+  if (window.netlifyIdentity) {
+    window.netlifyIdentity.on("init", user => {
+      if (!user) {
+        window.netlifyIdentity.on("login", () => {
+          document.location.href = "/index.html";
+        });
+        window.netlifyIdentity.open();
+      }
+    });
+  }
+</script>
 
 <div class="card" id="gate-card">
 
