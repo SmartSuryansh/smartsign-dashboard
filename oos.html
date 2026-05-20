@@ -61,20 +61,16 @@ tbody tr:hover{background:var(--hv);}
 </style>
 </head>
 <body>
-<!-- Netlify Identity Auth Guard -->
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <script>
-  window.netlifyIdentity = window.netlifyIdentity || {};
-  if (window.netlifyIdentity) {
-    window.netlifyIdentity.on("init", user => {
-      if (!user) {
-        window.netlifyIdentity.on("login", () => {
-          document.location.href = "/index.html";
-        });
-        window.netlifyIdentity.open();
-      }
-    });
-  }
+  netlifyIdentity.on("init", function(user) {
+    if (!user) {
+      window.location.href = "/login.html";
+    }
+  });
+  netlifyIdentity.on("logout", function() {
+    window.location.href = "/login.html";
+  });
 </script>
 <div class="w">
 <div class="hdr"><div class="hdr-l"><div class="cr"><a href="#">← Dashboard Hub</a> / Inventory & OOS</div><h1>Inventory & OOS Impact</h1><div class="sub">ASIN Status Tracking · YoY Revenue Impact Analysis</div></div></div>
