@@ -73,6 +73,11 @@ tbody tr:hover{background:var(--hv);}
 </style>
 </head>
 <body>
+<script>
+  if (sessionStorage.getItem("ss_dashboard_auth") !== "1") {
+    window.location.replace("gate.html");
+  }
+</script>
 <div class="w">
 <div class="hdr"><div class="hdr-l"><div class="cr"><a href="#">← Dashboard Hub</a> / Weekly Performance</div><h1>Weekly Performance Report</h1><div class="sub" id="weekLabel">SC + VC Combined · Sun–Sat</div></div>
 <div class="cts"><div class="ct"><label>View</label><select id="vs"><option value="combined">SC + VC Combined</option><option value="SC">Seller Central</option><option value="VC">Vendor Central</option></select></div></div></div>
