@@ -60,6 +60,11 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 </style>
 </head>
 <body>
+<script>
+  if (sessionStorage.getItem("ss_dashboard_auth") !== "1") {
+    window.location.replace("gate.html");
+  }
+</script>
 <div class="w">
   <div class="hdr">
     <div class="logo">SmartSign USA</div>
