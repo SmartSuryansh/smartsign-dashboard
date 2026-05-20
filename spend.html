@@ -79,11 +79,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     });
   }
 </script>
-<script>
-  if (sessionStorage.getItem("ss_dashboard_auth") !== "1") {
-    window.location.replace("gate.html");
-  }
-</script>
 <div class="w">
 <div class="hdr"><div class="hdr-l"><div class="cr"><a href="index.html">← Dashboard Hub</a> / Spend Tracker</div><h1>Spend Tracker</h1><div class="sub">Daily YoY Performance · Day-of-Week Aligned</div></div>
 <div class="cts"><div class="ct"><label>Channel</label><select id="cs"><option value="SC">Seller Central</option><option value="VC">Vendor Central</option></select></div><div class="ct"><label>Month</label><select id="ms"></select></div></div></div>
