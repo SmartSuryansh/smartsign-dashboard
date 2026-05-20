@@ -439,6 +439,12 @@ tbody tr{cursor:pointer;transition:background .15s;}tbody tr:hover{background:va
 </style>
 </head>
 <body>
+<!-- paste this right after <body> in EVERY dashboard file -->
+<script>
+  if (sessionStorage.getItem("ss_dashboard_auth") !== "1") {
+    window.location.replace("gate.html");
+  }
+</script>
 <div class="w">
 <div class="hdr"><div class="hdr-l"><div class="cr"><a href="index.html">← Dashboard Hub</a> / Command Center</div><h1>Campaign <span>Command Center</span></h1></div><div class="hdr-r"><button class="hdr-btn" onclick="openBriefing()">📨 Generate Briefing</button></div></div>
 <div class="dp-bar" id="dpBar"></div>
