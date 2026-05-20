@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmartSign — Login</title>
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0a0a0f;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .login-box {
+      background: #12121a;
+      border: 1px solid #2a2a3a;
+      border-radius: 16px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      box-shadow: 0 0 60px rgba(255,153,0,0.08);
+    }
+
+    .brand {
+      color: #ff9900;
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      color: #ffffff;
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: 13px;
+      margin-bottom: 36px;
+    }
+
+    #login-btn {
+      background: #ff9900;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 14px 32px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.2s;
+    }
+
+    #login-btn:hover { background: #e68a00; }
+
+    .footer {
+      margin-top: 24px;
+      color: #444;
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <div class="brand">SmartSign USA</div>
+    <h1>Amazon Ads Dashboard</h1>
+    <p class="subtitle">Authorized access only. Please log in to continue.</p>
+    <button id="login-btn">Log in with Email</button>
+    <p class="footer">Access restricted to invited users only.</p>
+  </div>
+
+  <script>
+    // If already logged in, go straight to dashboard
+    netlifyIdentity.on("init", function(user) {
+      if (user) {
+        window.location.href = "/index.html";
+      }
+    });
+
+    // After successful login, go to dashboard
+    netlifyIdentity.on("login", function() {
+      window.location.href = "/index.html";
+    });
+
+    // Button opens the login modal
+    document.getElementById("login-btn").addEventListener("click", function() {
+      netlifyIdentity.open("login");
+    });
+  </script>
+</body>
+</html>
