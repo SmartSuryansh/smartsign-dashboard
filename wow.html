@@ -73,20 +73,16 @@ tbody tr:hover{background:var(--hv);}
 </style>
 </head>
 <body>
-<!-- Netlify Identity Auth Guard -->
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <script>
-  window.netlifyIdentity = window.netlifyIdentity || {};
-  if (window.netlifyIdentity) {
-    window.netlifyIdentity.on("init", user => {
-      if (!user) {
-        window.netlifyIdentity.on("login", () => {
-          document.location.href = "/index.html";
-        });
-        window.netlifyIdentity.open();
-      }
-    });
-  }
+  netlifyIdentity.on("init", function(user) {
+    if (!user) {
+      window.location.href = "/login.html";
+    }
+  });
+  netlifyIdentity.on("logout", function() {
+    window.location.href = "/login.html";
+  });
 </script>
 <div class="w">
 <div class="hdr"><div class="hdr-l"><div class="cr"><a href="#">← Dashboard Hub</a> / Weekly Performance</div><h1>Weekly Performance Report</h1><div class="sub" id="weekLabel">SC + VC Combined · Sun–Sat</div></div>
