@@ -46,6 +46,11 @@
 </style>
 </head>
 <body>
+<script>
+  if (sessionStorage.getItem("ss_dashboard_auth") !== "1") {
+    window.location.replace("gate.html");
+  }
+</script>
 <div class="page">
 <div class="hero anim">
   <div class="hero-tag">SmartSign USA · Seller Central</div>
